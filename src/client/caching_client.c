@@ -4953,6 +4953,21 @@ caching_client_eglGetCurrentSurface (void* client,
  FINISH:
     return surface;
 }
+static void
+caching_client_glFlush (void *client)
+{
+    INSTRUMENT();
+
+    if (!CLIENT(client)->active_state)
+        return;
+
+    command_t *command = client_get_space_for_command (COMMAND_GLFLUSH);
+    command_glflush_init (command);
+
+    client_run_command_async (command);
+   // CACHING_CLIENT(client)->super_dispatch.glFlush (client);
+}
+
 
 static EGLBoolean
 caching_client_eglSwapBuffers (void* client,
@@ -4968,9 +4983,15 @@ caching_client_eglSwapBuffers (void* client,
     if (! (state->display == display &&
            state->drawable == surface))
         return EGL_FALSE;
+    command_t *command = client_get_space_for_command (COMMAND_EGLSWAPBUFFERS);
+    command_eglswapbuffers_init (command, display, surface);
 
-    EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglSwapBuffers (client, display, surface);
-    return result;
+    client_run_command_async (command);
+    return EGL_TRUE;
+
+//    EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglSwapBuffers (client, display, surface);
+//    return result;
+    
 }
 
 static EGLSurface
@@ -5086,8 +5107,8 @@ caching_client_eglMakeCurrent (void* client,
         return EGL_TRUE;
 
     /* Everything matches, so this is a no-op. */
-    egl_state_t *matching_state = NULL;
-    bool find_draw, find_read;
+//    egl_state_t *matching_state = NULL;
+//    bool find_draw, find_read;
 
     bool display_and_context_match = current_state &&
                                      current_state->display == display &&
@@ -5098,7 +5119,7 @@ caching_client_eglMakeCurrent (void* client,
             return EGL_TRUE;
         }
 
-        mutex_lock (cached_gl_states_mutex);
+/*        mutex_lock (cached_gl_states_mutex);
  
         link_list_t **surfaces = cached_gl_surfaces (display);
 
@@ -5112,22 +5133,23 @@ caching_client_eglMakeCurrent (void* client,
             matching_state = NULL;
 
         mutex_unlock (cached_gl_states_mutex);
+*/
     }
 
     /* We have found previously used draw and read surface.  Because
      * the display and context are matching, it means we are not
      * releasing the context in the thread, we can do async
      */
-    if (display_and_context_match && matching_state) {
+//    if (display_and_context_match && matching_state) {
         command_t *command = client_get_space_for_command (COMMAND_EGLMAKECURRENT);
         command_eglmakecurrent_init (command, display, draw, read, ctx);
         client_run_command_async (command);
-    } else {
+//    } else {
         /* Otherwise we must do this synchronously. */
-        if (CACHING_CLIENT(client)->super_dispatch.eglMakeCurrent (client, display,
-                                                                   draw, read, ctx) == EGL_FALSE)
-            return EGL_FALSE; /* Don't do anything else if we fail. */
-    }
+//        if (CACHING_CLIENT(client)->super_dispatch.eglMakeCurrent (client, display,
+  //                                                                 draw, read, ctx) == EGL_FALSE)
+    //        return EGL_FALSE; /* Don't do anything else if we fail. */
+   // }
 
     _caching_client_make_current (client, display, draw, read, ctx);
     return EGL_TRUE;

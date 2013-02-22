@@ -4843,14 +4843,22 @@ caching_client_eglGetDisplay (void *client,
                               NativeDisplayType native_display)
 {
     /* send log */
+    NativeDisplayType native = native_display;
+    if (native_display == EGL_DEFAULT_DISPLAY) {
+        Display *dpy = XOpenDisplay (NULL);
+        if (dpy == NULL)
+            return EGL_FALSE;
+        native = (NativeDisplayType) dpy;
+    }
+        
     CLIENT(client)->needs_timestamp = true;
 
-    EGLDisplay result = CACHING_CLIENT(client)->super_dispatch.eglGetDisplay (client, native_display);
+    EGLDisplay result = CACHING_CLIENT(client)->super_dispatch.eglGetDisplay (client, native);
     clients_list_set_needs_timestamp ();
 
     if (result != EGL_NO_DISPLAY && cached_gl_display_find (result) == NULL) {
         mutex_lock (cached_gl_display_list_mutex);
-        display_ctxs_surfaces_t *dpy = cached_gl_display_new (native_display, result);
+        display_ctxs_surfaces_t *dpy = cached_gl_display_new (native, result);
         link_list_t **dpys = cached_gl_displays ();
         link_list_append (dpys, (void *)dpy, destroy_dpy);
         mutex_unlock (cached_gl_display_list_mutex);

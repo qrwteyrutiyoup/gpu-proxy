@@ -16,6 +16,7 @@ libGPUProcess_la_LDFLAGS = \
 	-ldl \
 	-lpthread \
         -lrt \
+        -lX11 \
 	-no-undefined
 
 libGPUProcess_la_SOURCES = \

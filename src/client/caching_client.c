@@ -5577,6 +5577,60 @@ caching_client_eglUnmapImageSEC (void *client, EGLDisplay display,
     return result;
 }
 
+static EGLenum
+caching_client_eglQueryAPI (void *client)
+{
+    INSTRUMENT();
+
+    CLIENT(client)->needs_timestamp = true;
+    return CACHING_CLIENT(client)->super_dispatch.eglQueryAPI (client);
+}
+
+static EGLBoolean
+caching_client_eglQuerySurface (void *client, EGLDisplay display,
+                                EGLSurface surface, EGLint attribute,
+                                EGLint *value)
+{
+    INSTRUMENT();
+
+    CLIENT(client)->needs_timestamp = true;
+    return CACHING_CLIENT(client)->super_dispatch.eglQuerySurface (client,
+                                                                   display,
+                                                                   surface,
+                                                                   attribute,
+                                                                   value);
+}
+
+static EGLBoolean
+caching_client_eglSurfaceAttrib (void *client, EGLDisplay display,
+                                 EGLSurface surface, EGLint attribute,
+                                 EGLint value)
+{
+    INSTRUMENT();
+
+    CLIENT(client)->needs_timestamp = true;
+    return CACHING_CLIENT(client)->super_dispatch.eglSurfaceAttrib (client,
+                                                                   display,
+                                                                   surface,
+                                                                   attribute,
+                                                                   value);
+}
+
+static EGLBoolean
+caching_client_eglQueryContext (void *client, EGLDisplay display,
+                               EGLContext context, EGLint attribute,
+                                EGLint *value)
+{
+    INSTRUMENT();
+
+    CLIENT(client)->needs_timestamp = true;
+    return CACHING_CLIENT(client)->super_dispatch.eglQueryContext (client,
+                                                                   display,
+                                                                   context,
+                                                                   attribute,
+                                                                   value);
+}
+
 static EGLContext
 caching_client_eglCreateContext (void *client,
                                  EGLDisplay dpy,

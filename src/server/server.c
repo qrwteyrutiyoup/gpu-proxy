@@ -129,8 +129,7 @@ server_handle_glgenbuffers (server_t *server,
 
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread,
-                                     abstract_command->timestamp))
+        while (! _server_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -166,8 +165,7 @@ server_handle_gldeletebuffers (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread,
-                                   abstract_command->timestamp))
+        while (! _server_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -203,8 +201,7 @@ server_handle_glgenframebuffers (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread,
-                                   abstract_command->timestamp))
+        while (! _server_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
         _server_remove_call_log ();
         mutex_unlock (server_state_mutex);
@@ -242,8 +239,7 @@ server_handle_gldeleteframebuffers (server_t *server, command_t *abstract_comman
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread,
-                                   abstract_command->timestamp))
+        while (! _server_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -279,8 +275,7 @@ server_handle_glgentextures (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread,
-                                   abstract_command->timestamp))
+        while (! _server_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -316,8 +311,7 @@ server_handle_gldeletetextures (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread,
-                                   abstract_command->timestamp))
+        while (! _server_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -354,8 +348,7 @@ server_handle_glgenrenderbuffers (server_t *server,
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread,
-                                   abstract_command->timestamp))
+        while (! _server_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -391,8 +384,7 @@ server_handle_gldeleterenderbuffers (server_t *server, command_t *abstract_comma
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread,
-                                   abstract_command->timestamp))
+        while (! _server_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -427,8 +419,7 @@ server_handle_glcreateprogram (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread,
-                                   abstract_command->timestamp))
+        while (! _server_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -457,8 +448,7 @@ server_handle_gldeleteprogram (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread,
-                                   abstract_command->timestamp))
+        while (! _server_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -488,8 +478,7 @@ server_handle_glcreateshader (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread,
-                                   abstract_command->timestamp))
+        while (! _server_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -517,8 +506,7 @@ server_handle_gldeleteshader (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread,
-                                   abstract_command->timestamp))
+        while (! _server_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -551,8 +539,7 @@ server_handle_eglterminate (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglterminate_t *command =
@@ -573,8 +560,7 @@ server_handle_eglreleasethread (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglreleasethread_t *command =
@@ -599,8 +585,7 @@ server_handle_eglmakecurrent (server_t *server, command_t *abstract_command)
        (command_eglmakecurrent_t *)abstract_command;
 
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command->result = server->dispatch.eglMakeCurrent (server, command->dpy,
@@ -625,8 +610,7 @@ server_handle_glflush (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     server->dispatch.glFlush (server);
@@ -642,8 +626,7 @@ server_handle_glfinish (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     server->dispatch.glFinish (server);
@@ -659,8 +642,7 @@ server_handle_eglwaitnative (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglwaitnative_t *command =
@@ -679,8 +661,7 @@ server_handle_eglwaitgl (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglwaitgl_t *command =
@@ -699,8 +680,7 @@ server_handle_eglwaitclient (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglwaitclient_t *command =
@@ -719,8 +699,7 @@ server_handle_eglswapbuffers (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglswapbuffers_t *command =
@@ -738,8 +717,7 @@ server_handle_eglgetdisplay (server_t *server, command_t *abstract_command)
 {
     INSTRUMENT ();
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglgetdisplay_t *command =
@@ -784,8 +762,7 @@ server_handle_eglinitialize (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
 
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglinitialize_t *command =
@@ -804,8 +781,7 @@ server_handle_eglcreatewindowsurface (
     INSTRUMENT ();
 
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglcreatewindowsurface_t *command =
@@ -824,8 +800,7 @@ server_handle_eglcreatepbuffersurface (
     INSTRUMENT ();
 
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglcreatepbuffersurface_t *command =
@@ -844,8 +819,7 @@ server_handle_eglcreatepixmapsurface (
     INSTRUMENT ();
 
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglcreatepixmapsurface_t *command =
@@ -863,8 +837,7 @@ server_handle_egldestroysurface (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
 
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_egldestroysurface_t *command =
@@ -882,8 +855,7 @@ server_handle_eglbindapi (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
 
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglbindapi_t *command =
@@ -902,8 +874,7 @@ server_handle_eglcreatepbufferfromclientbuffer (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglcreatepbufferfromclientbuffer_t *command =
@@ -921,8 +892,7 @@ server_handle_eglbindteximage (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglbindteximage_t *command =
@@ -941,8 +911,7 @@ server_handle_eglreleaseteximage (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglreleaseteximage_t *command =
@@ -960,8 +929,7 @@ server_handle_eglcreatecontext (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglcreatecontext_t *command =
@@ -979,8 +947,7 @@ server_handle_egldestroycontext (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_egldestroycontext_t *command =
@@ -998,8 +965,7 @@ server_handle_eglcopybuffers (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglcopybuffers_t *command =
@@ -1017,8 +983,7 @@ server_handle_egllocksurfacekhr (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_egllocksurfacekhr_t *command =
@@ -1037,8 +1002,7 @@ server_handle_eglunlocksurfacekhr (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglunlocksurfacekhr_t *command =
@@ -1056,8 +1020,7 @@ server_handle_eglcreateimagekhr (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglcreateimagekhr_t *command =
@@ -1076,8 +1039,7 @@ server_handle_egldestroyimagekhr (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_egldestroyimagekhr_t *command =
@@ -1095,8 +1057,7 @@ server_handle_eglcreatesynckhr (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglcreatesynckhr_t *command =
@@ -1128,8 +1089,7 @@ server_handle_eglclientwaitsynckhr (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglclientwaitsynckhr_t *command =
@@ -1147,8 +1107,7 @@ server_handle_eglsignalsynckhr (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglsignalsynckhr_t *command =
@@ -1167,8 +1126,7 @@ server_handle_eglcreatedrmimagemesa (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglcreatedrmimagemesa_t *command =
@@ -1187,8 +1145,7 @@ server_handle_eglexportdrmimagemesa (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglexportdrmimagemesa_t *command =
@@ -1206,8 +1163,7 @@ server_handle_eglmapimagesec (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglmapimagesec_t *command =
@@ -1225,8 +1181,7 @@ server_handle_eglunmapimagesec (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglunmapimagesec_t *command =
@@ -1245,8 +1200,7 @@ server_handle_gleglimagetargettexture2does (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_gleglimagetargettexture2does_t *command =
@@ -1266,8 +1220,7 @@ server_handle_gleglimagetargetrenderbufferstorageoes (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_gleglimagetargetrenderbufferstorageoes_t *command =
@@ -1287,8 +1240,7 @@ server_handle_glmapbufferoes (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_glmapbufferoes_t *command =
@@ -1307,8 +1259,7 @@ server_handle_glunmapbufferoes (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread,
-                                 abstract_command->timestamp))
+    while (! _server_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_glunmapbufferoes_t *command =
@@ -1457,8 +1408,7 @@ server_handle_log (server_t *server, command_t *abstract_command)
 
     mutex_lock (server_state_mutex);
     command->result = true;
-    _call_order_list_append (abstract_command->server_id,
-                             abstract_command->timestamp);
+    _call_order_list_append (abstract_command->server_id);
     mutex_unlock (server_state_mutex);
 }
     

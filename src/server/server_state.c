@@ -173,14 +173,12 @@ _server_display_find (EGLDisplay egl_display)
  * functions for lock/release list
  *******************************************************/
 void
-_call_order_list_append (thread_t server, double timestamp)
+_call_order_list_append (thread_t server)
 {
     link_list_t **list = _call_order_list ();
 
     server_log_t *log = (server_log_t *) malloc (sizeof (server_log_t));
     log->server = server;
-    log->timestamp = timestamp;
-    //printf ("append %ld, %0.5f\n", server, timestamp);
     link_list_append (list, log, free);
 }
 
@@ -190,22 +188,18 @@ _call_order_list_remove ()
     link_list_t **list = _call_order_list ();
 
     if (*list != NULL) {
-        //server_log_t *log = (server_log_t *)(*list)->data;
-        //printf ("remove %ld, %0.5f\n", log->server, log->timestamp);
         link_list_delete_element (list, *list);
     }
 }
 
 bool
-_call_order_list_head_is_server (thread_t server, double timestamp)
+_call_order_list_head_is_server (thread_t server)
 {
     link_list_t **list = _call_order_list ();
 
     if (*list) {
         server_log_t *log = (server_log_t *)(*list)->data;
-        //printf ("compare %ld, %0.5f vs %ld, %0.5f\n", log->server, log->timestamp, server, timestamp);
-        if (log->server == server &&
-            log->timestamp == timestamp)
+        if (log->server == server)
             return true;
     }
 
@@ -214,15 +208,15 @@ _call_order_list_head_is_server (thread_t server, double timestamp)
 
 /* release/lock functions */
 void
-_server_append_call_log (thread_t server, double timestamp)
+_server_append_call_log (thread_t server)
 {
-    _call_order_list_append (server, timestamp);
+    _call_order_list_append (server);
 }
 
 bool
-_server_allow_call (thread_t server, double timestamp)
+_server_allow_call (thread_t server)
 {
-    return _call_order_list_head_is_server (server, timestamp);
+    return _call_order_list_head_is_server (server);
 }
 
 void

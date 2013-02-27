@@ -38,7 +38,6 @@ struct _client {
     thread_t server_thread;
     bool initializing;
     bool needs_timestamp;
-    double timestamp;
 
     sem_t server_signal;
     sem_t client_signal;
@@ -113,10 +112,7 @@ private void
 client_run_log_command (command_t *command);
 
 private void
-client_send_log (double timestamp);
-
-private double
-client_get_timestamp ();
+client_send_log (void);
 
 private void
 clients_list_add_client (client_t *client);

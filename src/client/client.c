@@ -338,7 +338,6 @@ client_get_space_for_command (command_type_t command_type)
     command->token = 0;
 
     if (client->needs_timestamp) {
-        command->timestamp = client->timestamp;
         command->use_timestamp = true;
     }
     else
@@ -495,23 +494,13 @@ client_run_log_command (command_t *command)
 }
 
 void
-client_send_log (double timestamp)
+client_send_log (void)
 {
     mutex_lock (pilot_command_mutex);
     command_t *command = client_get_space_for_log_command (COMMAND_LOG);
-    command->timestamp = timestamp;
 
     client_run_log_command (command);
     mutex_unlock (pilot_command_mutex);
-}
-
-double
-client_get_timestamp ()
-{
-    struct timespec now;
-
-    clock_gettime (CLOCK_MONOTONIC, &now);
-    return now.tv_sec * 1000000.0 + now.tv_nsec / 1000.0;
 }
 
 static link_list_t **

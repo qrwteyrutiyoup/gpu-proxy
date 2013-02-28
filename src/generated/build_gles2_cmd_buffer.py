@@ -3086,16 +3086,20 @@ class GLGenerator(object):
           file.Write("        GLuint *%s = hash_lookup (name_mapping_%s, command->%s);\n" % (mapped_name, func.GetMappedNameType(),  mapped_name))
           file.Write("        mutex_unlock (name_mapping_mutex);\n")
           file.Write("        if (!%s) {\n" % mapped_name)
-          file.Write("            goto FINISH;\n")
           if (func.NeedsCreateMappedName(mapped_name)):
-            file.Write("        GLuint *data = (GLuint *) malloc (1 * sizeof (GLuint));\n")
-            file.Write("        *data = command->%s;\n" %mapped_name)
-            file.Write("        hash_insert (name_mapping_%s, *data, data);\n" %func.GetMappedNameType())
-            file.Write("        %s = data;\n" %mapped_name)
+            file.Write("          GLuint *data = (GLuint *) malloc (1 * sizeof (GLuint));\n")
+            file.Write("          *data = command->%s;\n" %mapped_name)
+            file.Write("          hash_insert (name_mapping_%s, *data, data);\n" %func.GetMappedNameType())
+            file.Write("          %s = data;\n" %mapped_name)
           else:
-            file.Write("            return;\n")
-          file.Write("        }\n");
-          file.Write("        command->%s = *%s;\n" % (mapped_name, mapped_name))
+            file.Write("          if (abstract_command->use_timestamp) {\n")
+            file.Write("              _server_remove_call_log ();\n")
+            file.Write("              broadcast (server_state_signal);\n")
+            file.Write("              mutex_unlock (server_state_mutex);\n")
+            file.Write("              return;\n");
+            file.Write("          }\n")
+          file.Write("       }\n")
+          file.Write("       command->%s = *%s;\n" % (mapped_name, mapped_name))
           file.Write("    }\n")
 
         file.Write("    ")
@@ -3113,8 +3117,6 @@ class GLGenerator(object):
         if need_destructor_call:
           file.Write("    command_%s_destroy_arguments (command);\n" % func.name.lower())
         file.Write("\n");
-	if len(mapped_names) > 0:
-		file.Write("FINISH:\n");
         file.Write("    if (abstract_command->use_timestamp) {\n");
         file.Write("        _server_remove_call_log ();\n");
         file.Write("        broadcast (server_state_signal);\n");

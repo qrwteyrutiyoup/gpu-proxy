@@ -3096,8 +3096,8 @@ class GLGenerator(object):
             file.Write("              _server_remove_call_log ();\n")
             file.Write("              broadcast (server_state_signal);\n")
             file.Write("              mutex_unlock (server_state_mutex);\n")
-            file.Write("              return;\n");
             file.Write("          }\n")
+            file.Write("          return;\n");
           file.Write("       }\n")
           file.Write("       command->%s = *%s;\n" % (mapped_name, mapped_name))
           file.Write("    }\n")

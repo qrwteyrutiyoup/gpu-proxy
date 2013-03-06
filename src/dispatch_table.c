@@ -6,6 +6,8 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 
+mutex_static_init (dispatch_mutex);
+
 static void *
 find_gl_symbol (void *handle,
                 __eglMustCastToProperFunctionPointerType (*getProcAddress) (const char *procname),
@@ -53,16 +55,23 @@ dispatch_table_get_base ()
     static dispatch_table_t dispatch;
     static bool table_initialized = false;
     static bool initializing_table = false;
-    if (table_initialized)
+
+    mutex_lock (dispatch_mutex);
+
+    if (table_initialized) {
+        mutex_unlock (dispatch_mutex);
         return &dispatch;
+    }
 
     if (initializing_table) {
+        mutex_unlock (dispatch_mutex);
         return &dispatch;
     }
 
     /* In case two threads got here at the same time, we want to return
      * the dispatch table if another thread already initialized it */
     if (table_initialized) {
+        mutex_unlock (dispatch_mutex);
         return &dispatch;
     }
 
@@ -79,6 +88,8 @@ dispatch_table_get_base ()
 
     initializing_table = false;
     table_initialized = true;
+
+    mutex_unlock (dispatch_mutex);
 
     return &dispatch;
 }

@@ -43,12 +43,14 @@ server_start_work_loop (server_t *server)
             break;
 
         server->handler_table[read_command->type](server, read_command);
-        buffer_read_advance (server->buffer, read_command->size);
 
         if (read_command->token) {
             server->buffer->last_token = read_command->token;
+            buffer_read_advance (server->buffer, read_command->size);
             sem_post (server->client_signal);
         }
+        else
+            buffer_read_advance (server->buffer, read_command->size);
     }
 }
 
@@ -82,12 +84,14 @@ pilot_server_start_work_loop (server_t *server)
             continue;
 
         server->handler_table[read_command->type](server, read_command);
-        buffer_read_advance (server->buffer, read_command->size);
 
         if (read_command->token) {
             server->buffer->last_token = read_command->token;
+            buffer_read_advance (server->buffer, read_command->size);
             sem_post (server->client_signal);
         }
+        else
+            buffer_read_advance (server->buffer, read_command->size);
     }
 }
 

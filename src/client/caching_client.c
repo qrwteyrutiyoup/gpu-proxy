@@ -5217,6 +5217,7 @@ caching_client_eglCreatePixmapSurface (void *client,
 {
     INSTRUMENT();
 
+    mutex_lock (cached_gl_display_list_mutex);
     link_list_t **dpys = cached_gl_displays ();
     link_list_t *dpy = *dpys;
     while (dpy) {
@@ -5225,7 +5226,9 @@ caching_client_eglCreatePixmapSurface (void *client,
             XSync (cached_display->native_display, False);
             break;
         }
+        dpy = dpy->next;
     }
+    mutex_unlock (cached_gl_display_list_mutex);
 
     /* send log */
     CLIENT(client)->needs_timestamp = true;
@@ -5255,6 +5258,7 @@ caching_client_eglCreateWindowSurface (void *client,
 {
     INSTRUMENT();
 
+    mutex_lock (cached_gl_display_list_mutex);
     link_list_t **dpys = cached_gl_displays ();
     link_list_t *dpy = *dpys;
     while (dpy) {
@@ -5263,7 +5267,9 @@ caching_client_eglCreateWindowSurface (void *client,
             XSync (cached_display->native_display, False);
             break;
         }
+        dpy = dpy->next;
     }
+    mutex_unlock (cached_gl_display_list_mutex);
 
     /* send log */
     CLIENT(client)->needs_timestamp = true;

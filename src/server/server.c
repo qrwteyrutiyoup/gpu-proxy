@@ -49,8 +49,10 @@ server_start_work_loop (server_t *server)
             buffer_read_advance (server->buffer, read_command->size);
             sem_post (server->client_signal);
         }
-        else
+        else 
             buffer_read_advance (server->buffer, read_command->size);
+
+        sem_post (server->server_read_signal);
     }
 }
 

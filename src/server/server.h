@@ -32,6 +32,7 @@ struct _server {
 
     sem_t *server_signal;
     sem_t *client_signal;
+    sem_t *server_read_signal;
 
     EGLDisplay egl_display;
 };

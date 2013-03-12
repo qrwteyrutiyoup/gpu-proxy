@@ -145,6 +145,7 @@ start_server_thread_func (void *ptr)
 
     server->server_signal = &client->server_signal;
     server->client_signal = &client->client_signal;
+    server->server_read_signal = &client->server_read_signal;
 
     mutex_unlock (client->server_started_mutex);
     prctl (PR_SET_TIMERSLACK, 1);
@@ -244,6 +245,7 @@ client_init (client_t *client)
 
     sem_init (&client->server_signal, 0, 0);
     sem_init (&client->client_signal, 0, 0);
+    sem_init (&client->server_read_signal, 0, 0);
 
     client->active_state = NULL;
     client->needs_timestamp = false;
@@ -317,7 +319,8 @@ client_get_space_for_size (client_t *client,
     write_location = (command_t *) buffer_write_address (&client->buffer,
                                                          &available_space);
     while (! write_location || available_space < size) {
-        sched_yield ();
+        //sched_yield ();
+        sem_wait (&client->server_read_signal);
         write_location = (command_t *) buffer_write_address (&client->buffer,
                                                              &available_space);
     }

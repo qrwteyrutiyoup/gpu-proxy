@@ -1249,7 +1249,7 @@ server_handle_glmapbufferoes (
 
     command_glmapbufferoes_t *command =
             (command_glmapbufferoes_t *)abstract_command;
-    server->dispatch.glMapBufferOES (server, command->target, command->access);
+    command->result = server->dispatch.glMapBufferOES (server, command->target, command->access);
     
     _server_remove_call_log ();
     broadcast (server_state_signal);

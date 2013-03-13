@@ -3924,7 +3924,7 @@ caching_client_glUseProgram (void* client,
         if (!new_program)
             return;
         GLint status;
-        glGetProgramiv(program_id, GL_LINK_STATUS, &status);
+        CACHING_CLIENT(client)->super_dispatch.glGetProgramiv (client, program_id, GL_LINK_STATUS, &status);
         if (status != GL_TRUE) {
             caching_client_glSetError (client, GL_INVALID_OPERATION);
             return;
@@ -3939,6 +3939,25 @@ caching_client_glUseProgram (void* client,
     if (current_program && current_program->mark_for_deletion)
         egl_state_destroy_cached_shader_object (state, &current_program->base);
     state->current_program = program_id;
+}
+
+static void
+caching_client_glGetProgramiv (void *client, GLuint program, GLenum pname, GLint *params)
+{
+    egl_state_t *state = client_get_current_state (CLIENT (client));
+    if (! state)
+        return;
+
+    if (!is_valid_ProgramParameter(pname)) {
+        caching_client_glSetError (client, GL_INVALID_ENUM);
+        return;
+    }
+
+    program_t *new_program = egl_state_lookup_cached_program_err (client, program, GL_INVALID_VALUE);
+    if (!new_program)
+        return;
+
+    CACHING_CLIENT(client)->super_dispatch.glGetProgramiv (client, program, pname, params);
 }
 
 static void

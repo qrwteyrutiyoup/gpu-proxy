@@ -2283,7 +2283,7 @@ caching_client_glGetAttribLocation (void* client,
     if (! state)
         return 0;
 
-    program_t *saved_program = egl_state_lookup_cached_program_err (client, program, GL_INVALID_OPERATION);
+    program_t *saved_program = egl_state_lookup_cached_program_err (client, program, GL_INVALID_VALUE);
     if (!saved_program)
         return -1;
 

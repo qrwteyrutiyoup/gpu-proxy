@@ -76,6 +76,7 @@ typedef struct _program {
      */
     HashTable       *location_cache;
     link_list_t     *attached_shaders;
+    bool            is_linked:1;
 } program_t;
 
 private program_t *

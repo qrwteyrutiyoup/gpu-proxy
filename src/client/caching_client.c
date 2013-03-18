@@ -2315,6 +2315,11 @@ caching_client_glGetAttribLocation (void* client,
     if (!saved_program)
         return -1;
 
+    if (!saved_program->is_linked) {
+        caching_client_glSetError (client, GL_INVALID_OPERATION);
+        return -1;
+    }
+
     GLuint *location = (GLuint *)hash_lookup (saved_program->attrib_location_cache,
                                               hash_str (name));
     if (location)
@@ -2343,6 +2348,8 @@ caching_client_glLinkProgram (void* client,
     program_t *saved_program = egl_state_lookup_cached_program_err (client, program, GL_INVALID_VALUE);
     if (!saved_program)
         return;
+
+    saved_program->is_linked = true;
 
     CACHING_CLIENT(client)->super_dispatch.glLinkProgram (client, program);
 }

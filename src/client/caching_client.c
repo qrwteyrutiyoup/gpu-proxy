@@ -997,6 +997,34 @@ caching_client_glAttachShader (void *client, GLuint program, GLuint shader)
 }
 
 static void
+caching_client_glDetachShader (void *client, GLuint program, GLuint shader)
+{
+    egl_state_t *state = client_get_current_state (CLIENT (client));
+    if (!state)
+        return;
+
+    program_t *cached_program = egl_state_lookup_cached_program_err (client, program, GL_INVALID_VALUE);
+    if (!cached_program)
+        return;
+
+    shader_object_t *cached_shader = egl_state_lookup_cached_shader_err (client, shader, GL_INVALID_VALUE);
+    if (!cached_shader)
+        return;
+
+    link_list_t *current = cached_program->attached_shaders;
+    while (current) {
+        GLuint *shader_id = (GLuint *)current->data;
+        if (*shader_id == shader) {
+            link_list_delete_element (&cached_program->attached_shaders, current);
+            return;
+        }
+        current = current->next;
+    }
+
+    caching_client_glSetError (client, GL_INVALID_OPERATION);
+}
+
+static void
 caching_client_glGetAttachedShaders (void    *client,
                                      GLuint   program,
                                      GLsizei  maxCount,

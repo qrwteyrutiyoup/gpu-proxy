@@ -585,8 +585,6 @@ FUNCTIONS_GENERATING_ERRORS = [
  'glCompressedTexSubImage2D',
  'glCopyTexImage2D',
  'glCopyTexSubImage2D',
- 'glDeleteProgram',
- 'glDeleteShader',
  'glDetachShader',
  'glFramebufferRenderbuffer',
  'glFramebufferTexture2D',

@@ -16,7 +16,8 @@ typedef struct _shader_object shader_object_t;
 
 struct _shader_object {
     GLuint id;
-    int type;
+    int    type;
+    bool   mark_for_deletion:1;
 };
 
 typedef struct v_program_status {
@@ -68,7 +69,6 @@ typedef struct location_properties {
 
 typedef struct _program {
     shader_object_t base;
-    bool            mark_for_deletion;
     HashTable       *attrib_location_cache;
     HashTable       *uniform_location_cache;
     /* XXX: location_cache is used to know if the location is valid

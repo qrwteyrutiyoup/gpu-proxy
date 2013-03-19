@@ -860,6 +860,9 @@ caching_client_glDeleteProgram (void *client,
     if (!state)
         return;
 
+    if (!program)
+        return;
+
     program_t *cached_program = (program_t*) egl_state_lookup_cached_shader_object (state, program);
     if (!cached_program) {
         caching_client_glSetError (client, GL_INVALID_VALUE);
@@ -869,7 +872,7 @@ caching_client_glDeleteProgram (void *client,
     CACHING_CLIENT(client)->super_dispatch.glDeleteProgram (client, program);
 
     if (cached_program->base.id == state->current_program) {
-        cached_program->mark_for_deletion = true;
+        cached_program->base.mark_for_deletion = true;
         return;
     }
 
@@ -905,6 +908,47 @@ caching_client_glCreateShader (void* client, GLenum shaderType)
 
     return result;
 }
+
+static void
+caching_client_glDeleteShader (void *client,
+                               GLuint shader)
+{
+    INSTRUMENT();
+    egl_state_t *state = client_get_current_state (CLIENT (client));
+    if (!state)
+        return;
+
+    if (!shader)
+        return;
+
+    shader_object_t *cached_shader = egl_state_lookup_cached_shader_object (state, shader);
+    if (!cached_shader) {
+        caching_client_glSetError (client, GL_INVALID_VALUE);
+        return;
+    }
+
+    CACHING_CLIENT(client)->super_dispatch.glDeleteShader (client, shader);
+
+    program_t *cached_program = (program_t*) egl_state_lookup_cached_shader_object (state, state->current_program);
+    if (!cached_program) {
+        egl_state_destroy_cached_shader_object (state, cached_shader);
+        return;
+    }
+
+    link_list_t *current = cached_program->attached_shaders;
+    while (current) {
+        GLuint *shader_id = (GLuint *)current->data;
+        if (*shader_id == shader) {
+            cached_shader->mark_for_deletion = true;
+            return;
+        }
+        current = current->next;
+    }
+
+    egl_state_destroy_cached_shader_object (state, cached_shader);
+}
+
+
 
 static void
 caching_client_glShaderSource (void *client, GLuint shader, GLsizei count,
@@ -3971,7 +4015,7 @@ caching_client_glUseProgram (void* client,
     /* this maybe not right because this program may be invalid
      * object, we save here to save time in glGetError() */
     program_t *current_program = (program_t *) egl_state_lookup_cached_shader_object (state, state->current_program);
-    if (current_program && current_program->mark_for_deletion)
+    if (current_program && current_program->base.mark_for_deletion)
         egl_state_destroy_cached_shader_object (state, &current_program->base);
     state->current_program = program_id;
 }

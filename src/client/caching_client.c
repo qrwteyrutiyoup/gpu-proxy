@@ -2394,6 +2394,7 @@ caching_client_glLinkProgram (void* client,
         return;
 
     saved_program->is_linked = true;
+    hash_delete_all (saved_program->attrib_location_cache, NULL, NULL);
 
     CACHING_CLIENT(client)->super_dispatch.glLinkProgram (client, program);
 }

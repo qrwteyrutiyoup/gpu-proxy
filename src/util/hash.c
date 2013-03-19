@@ -261,12 +261,12 @@ hash_delete_all (HashTable *table,
 {
     GLuint pos;
     assert (table);
-    assert (callback);
     table->InDeleteAll = GL_TRUE;
     for (pos = 0; pos < TABLE_SIZE; pos++) {
         struct HashEntry *entry, *next;
         for (entry = table->Table[pos]; entry; entry = next) {
-            callback (entry->Key, entry->Data, userData);
+            if (callback)
+                callback (entry->Key, entry->Data, userData);
             next = entry->Next;
             free (entry);
         }

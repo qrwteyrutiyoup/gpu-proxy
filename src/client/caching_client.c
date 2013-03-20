@@ -17,6 +17,7 @@
 
 mutex_static_init (cached_gl_states_mutex);
 mutex_static_init (cached_gl_display_list_mutex);
+mutex_static_init (cached_shared_states_mutex);
 
 static texture_t *
 caching_client_get_default_texture ()
@@ -384,8 +385,10 @@ caching_client_glBindTexture (void* client, GLenum target, GLuint texture)
 
     /* look up in cache */
     if (texture != 0 && !egl_state_lookup_cached_texture (state, texture)) {
+        mutex_lock (cached_shared_states_mutex);
         name_handler_alloc_name (egl_state_get_texture_name_handler (state), texture);
         egl_state_create_cached_texture (state, texture);
+        mutex_unlock (cached_shared_states_mutex);
     }
 
     CACHING_CLIENT(client)->super_dispatch.glBindTexture (client, target, texture);
@@ -788,7 +791,11 @@ caching_client_glCreateProgram (void* client)
     if (!state)
         return 0;
 
+    mutex_lock (cached_shared_states_mutex);
     name_handler_alloc_names (egl_state_get_shader_objects_name_handler (state), 1, &result);
+    egl_state_create_cached_program (state, result);
+    mutex_unlock (cached_shared_states_mutex);
+
     command = client_get_space_for_command (COMMAND_GLCREATEPROGRAM);
     command_glcreateprogram_init (command);
     ((command_glcreateprogram_t *)command)->result = result;
@@ -800,7 +807,6 @@ caching_client_glCreateProgram (void* client)
         return 0;
     }
 
-    egl_state_create_cached_program (state, result);
     return result;
 }
 
@@ -863,9 +869,11 @@ caching_client_glDeleteProgram (void *client,
     if (!program)
         return;
 
+    mutex_lock (cached_shared_states_mutex);
     program_t *cached_program = (program_t*) egl_state_lookup_cached_shader_object (state, program);
     if (!cached_program) {
         caching_client_glSetError (client, GL_INVALID_VALUE);
+        mutex_unlock (cached_shared_states_mutex);
         return;
     }
 
@@ -873,6 +881,7 @@ caching_client_glDeleteProgram (void *client,
 
     if (cached_program->base.id == state->current_program) {
         cached_program->base.mark_for_deletion = true;
+        mutex_unlock (cached_shared_states_mutex);
         return;
     }
 
@@ -892,6 +901,7 @@ caching_client_glDeleteProgram (void *client,
 
     name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, &program);
     egl_state_destroy_cached_shader_object (state, &cached_program->base);
+    mutex_unlock (cached_shared_states_mutex);
 }
 
 static GLuint
@@ -908,18 +918,21 @@ caching_client_glCreateShader (void* client, GLenum shaderType)
     }
 
     GLuint result = 0;
-    command_t *command = client_get_space_for_command (COMMAND_GLCREATESHADER);
 
+    mutex_lock (cached_shared_states_mutex);
     name_handler_alloc_names (egl_state_get_shader_objects_name_handler (state), 1, &result);
-    command_glcreateshader_init (command, shaderType);
-    ((command_glcreateshader_t *)command)->result = result;
-
-    client_run_command_async (command);
-
     if (result == 0)
         caching_client_set_needs_get_error (CLIENT (client));
     else
         egl_state_create_cached_shader (state, result);
+    mutex_unlock (cached_shared_states_mutex);
+
+    command_t *command = client_get_space_for_command (COMMAND_GLCREATESHADER);
+
+    command_glcreateshader_init (command, shaderType);
+    ((command_glcreateshader_t *)command)->result = result;
+
+    client_run_command_async (command);
 
     return result;
 }
@@ -936,9 +949,11 @@ caching_client_glDeleteShader (void *client,
     if (!shader)
         return;
 
+    mutex_lock (cached_shared_states_mutex);
     shader_object_t *cached_shader = egl_state_lookup_cached_shader_object (state, shader);
     if (!cached_shader) {
         caching_client_glSetError (client, GL_INVALID_VALUE);
+        mutex_unlock (cached_shared_states_mutex);
         return;
     }
 
@@ -948,6 +963,7 @@ caching_client_glDeleteShader (void *client,
     if (!cached_program) {
         name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, &shader);
         egl_state_destroy_cached_shader_object (state, cached_shader);
+        mutex_unlock (cached_shared_states_mutex);
         return;
     }
 
@@ -956,6 +972,7 @@ caching_client_glDeleteShader (void *client,
         GLuint *shader_id = (GLuint *)current->data;
         if (*shader_id == shader) {
             cached_shader->mark_for_deletion = true;
+            mutex_unlock (cached_shared_states_mutex);
             return;
         }
         current = current->next;
@@ -963,6 +980,7 @@ caching_client_glDeleteShader (void *client,
 
     name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, &shader);
     egl_state_destroy_cached_shader_object (state, cached_shader);
+    mutex_unlock (cached_shared_states_mutex);
 }
 
 
@@ -1064,13 +1082,18 @@ caching_client_glDetachShader (void *client, GLuint program, GLuint shader)
     if (!state)
         return;
 
+    mutex_lock (cached_shared_states_mutex);
     program_t *cached_program = egl_state_lookup_cached_program_err (client, program, GL_INVALID_VALUE);
-    if (!cached_program)
+    if (!cached_program) {
+        mutex_unlock (cached_shared_states_mutex);
         return;
+    }
 
     shader_object_t *cached_shader = egl_state_lookup_cached_shader_err (client, shader, GL_INVALID_VALUE);
-    if (!cached_shader)
+    if (!cached_shader) {
+        mutex_unlock (cached_shared_states_mutex);
         return;
+    }
 
     link_list_t *current = cached_program->attached_shaders;
     while (current) {
@@ -1082,10 +1105,12 @@ caching_client_glDetachShader (void *client, GLuint program, GLuint shader)
                 name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, &shader);
                 egl_state_destroy_cached_shader_object (state, cached_shader);
             }
+            mutex_unlock (cached_shared_states_mutex);
             return;
         }
         current = current->next;
     }
+    mutex_unlock (cached_shared_states_mutex);
 
     caching_client_glSetError (client, GL_INVALID_OPERATION);
 }
@@ -1269,9 +1294,9 @@ caching_client_glDeleteRenderbuffers (void* client, GLsizei n, const GLuint *ren
         return;
     }
 
+    mutex_lock (cached_shared_states_mutex);
     name_handler_delete_names (egl_state_get_renderbuffer_name_handler (state), n, renderbuffers);
 
-    CACHING_CLIENT(client)->super_dispatch.glDeleteRenderbuffers (client, n, renderbuffers);
     int i;
     for (i = 0; i < n; i++) {
         if (renderbuffers[i] == 0)
@@ -1293,7 +1318,12 @@ caching_client_glDeleteRenderbuffers (void* client, GLsizei n, const GLuint *ren
         if (state->renderbuffer_binding == renderbuffers[i]) {
             state->renderbuffer_binding = 0;
         }
+
+        egl_state_delete_cached_renderbuffer (state, renderbuffers[i]);
     }
+    mutex_unlock (cached_shared_states_mutex);
+
+    CACHING_CLIENT(client)->super_dispatch.glDeleteRenderbuffers (client, n, renderbuffers);
 }
 
 static void
@@ -1316,6 +1346,7 @@ caching_client_glDeleteTextures (void* client, GLsizei n, const GLuint *textures
 
     CACHING_CLIENT(client)->super_dispatch.glDeleteTextures (client, n, textures);
 
+    mutex_lock (cached_shared_states_mutex);
     for (i = 0; i < n; i++) {
         if (textures[i] == 0)
             continue;
@@ -1339,8 +1370,8 @@ caching_client_glDeleteTextures (void* client, GLsizei n, const GLuint *textures
             state->texture_binding_3d = 0;
         if (state->active_texture == textures[i])
             state->active_texture = 0;
-
     }
+    mutex_unlock (cached_shared_states_mutex);
 }
 
 static void
@@ -2269,16 +2300,19 @@ caching_client_glGenRenderbuffers (void* client, GLsizei n, GLuint *renderbuffer
         return;
     }
 
+    mutex_lock (cached_shared_states_mutex);
     name_handler_alloc_names (egl_state_get_renderbuffer_name_handler (state), n, renderbuffers);
+    /* add renderbuffers to cache */
+    int i;
+    for (i = 0; i < n; i++)
+        egl_state_create_cached_renderbuffer (state, renderbuffers[i]);
+    mutex_unlock (cached_shared_states_mutex);
+
     GLuint *server_renderbuffers = (GLuint *)malloc (n * sizeof (GLuint));
     memcpy (server_renderbuffers, renderbuffers, n * sizeof (GLuint));
 
     CACHING_CLIENT(client)->super_dispatch.glGenRenderbuffers (client, n, server_renderbuffers);
     
-    /* add renderbuffers to cache */
-    int i;
-    for (i = 0; i < n; i++)
-        egl_state_create_cached_renderbuffer (state, renderbuffers[i]);
 }
 
 static void
@@ -2297,17 +2331,19 @@ caching_client_glGenTextures (void* client, GLsizei n, GLuint *textures)
         return;
     }
 
+    mutex_lock (cached_shared_states_mutex);
     name_handler_alloc_names (egl_state_get_texture_name_handler (state), n, textures);
+    /* add textures to cache */
+    int i;
+    for (i = 0; i < n; i++)
+        egl_state_create_cached_texture (state, textures[i]);
+    mutex_unlock (cached_shared_states_mutex);
 
     GLuint *server_textures = (GLuint *)malloc (n * sizeof (GLuint));
     memcpy (server_textures, textures, n * sizeof (GLuint));
 
     CACHING_CLIENT(client)->super_dispatch.glGenTextures (client, n, server_textures);
 
-    /* add textures to cache */
-    int i;
-    for (i = 0; i < n; i++)
-        egl_state_create_cached_texture (state, textures[i]);
 }
 
 static void

@@ -3649,8 +3649,10 @@ _synthesize_uniform_error(void *client,
     if (! state)
         return 0;
 
-    if (! state->current_program_object)
+    if (! state->current_program_object) {
+        caching_client_glSetError (client, GL_INVALID_OPERATION);
         return 0;
+    }
 
     location_properties_t *location_properties = hash_lookup(state->current_program_object->location_cache, location);
     if (! location_properties) {

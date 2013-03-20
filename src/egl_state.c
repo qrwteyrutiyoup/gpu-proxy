@@ -84,6 +84,7 @@ egl_state_init (egl_state_t *state,
     state->cull_face_mode = GL_BACK;
 
     state->current_program = 0;
+    state->current_program_object = NULL;
 
     state->depth_clear_value = 1;
     state->depth_func = GL_LESS;

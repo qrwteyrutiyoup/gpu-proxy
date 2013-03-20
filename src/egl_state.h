@@ -141,6 +141,7 @@ struct egl_state {
 
     /* used */
     GLint         current_program;              /* initial 0 */
+    program_t     *current_program_object;
 
     GLint         depth_bits;
     /* used */

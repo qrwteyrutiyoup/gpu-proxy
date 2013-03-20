@@ -4062,11 +4062,17 @@ caching_client_glUseProgram (void* client,
         program_t *new_program = egl_state_lookup_cached_program_err (client, program_id, GL_INVALID_VALUE);
         if (!new_program)
             return;
-        GLint status;
-        CACHING_CLIENT(client)->super_dispatch.glGetProgramiv (client, program_id, GL_LINK_STATUS, &status);
-        if (status != GL_TRUE) {
-            caching_client_glSetError (client, GL_INVALID_OPERATION);
-            return;
+
+        if (! new_program->is_linked) {
+            GLint status;
+            CACHING_CLIENT(client)->super_dispatch.glGetProgramiv (client, program_id, GL_LINK_STATUS, &status);
+
+            if (status != GL_TRUE) {
+                caching_client_glSetError (client, GL_INVALID_OPERATION);
+                return;
+            }
+            else
+                new_program->is_linked = true;
         }
     }
 
@@ -4096,7 +4102,15 @@ caching_client_glGetProgramiv (void *client, GLuint program, GLenum pname, GLint
     if (!new_program)
         return;
 
+    if (pname == GL_LINK_STATUS && new_program->is_linked) {
+        *params = GL_TRUE;
+        return;
+    }
+
     CACHING_CLIENT(client)->super_dispatch.glGetProgramiv (client, program, pname, params);
+
+    if (pname == GL_LINK_STATUS)
+        new_program->is_linked = (*params == GL_TRUE) ? true : false;
 }
 
 static void

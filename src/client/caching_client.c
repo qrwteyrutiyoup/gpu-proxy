@@ -384,7 +384,7 @@ caching_client_glBindTexture (void* client, GLenum target, GLuint texture)
 
     /* look up in cache */
     if (texture != 0 && !egl_state_lookup_cached_texture (state, texture)) {
-        name_handler_alloc_name (state->texture_name_handler, texture);
+        name_handler_alloc_name (egl_state_get_texture_name_handler (state), texture);
         egl_state_create_cached_texture (state, texture);
     }
 
@@ -788,7 +788,7 @@ caching_client_glCreateProgram (void* client)
     if (!state)
         return 0;
 
-    name_handler_alloc_names (state->shader_objects_name_handler, 1, &result);
+    name_handler_alloc_names (egl_state_get_shader_objects_name_handler (state), 1, &result);
     command = client_get_space_for_command (COMMAND_GLCREATEPROGRAM);
     command_glcreateprogram_init (command);
     ((command_glcreateprogram_t *)command)->result = result;
@@ -895,7 +895,7 @@ caching_client_glCreateShader (void* client, GLenum shaderType)
     GLuint result = 0;
     command_t *command = client_get_space_for_command (COMMAND_GLCREATESHADER);
 
-    name_handler_alloc_names (state->shader_objects_name_handler, 1, &result);
+    name_handler_alloc_names (egl_state_get_shader_objects_name_handler (state), 1, &result);
     command_glcreateshader_init (command, shaderType);
     ((command_glcreateshader_t *)command)->result = result;
 
@@ -1247,7 +1247,7 @@ caching_client_glDeleteRenderbuffers (void* client, GLsizei n, const GLuint *ren
         return;
     }
 
-    name_handler_delete_names (state->renderbuffer_name_handler, n, renderbuffers);
+    name_handler_delete_names (egl_state_get_renderbuffer_name_handler (state), n, renderbuffers);
 
     CACHING_CLIENT(client)->super_dispatch.glDeleteRenderbuffers (client, n, renderbuffers);
     int i;
@@ -1306,6 +1306,7 @@ caching_client_glDeleteTextures (void* client, GLsizei n, const GLuint *textures
             framebuffer->attached_image = 0;
         }
 
+        name_handler_delete_names (egl_state_get_texture_name_handler (state), n, textures);
         egl_state_delete_cached_texture (state, textures[i]);
 
         if (state->texture_binding[0] == textures[i])
@@ -2246,7 +2247,7 @@ caching_client_glGenRenderbuffers (void* client, GLsizei n, GLuint *renderbuffer
         return;
     }
 
-    name_handler_alloc_names (state->renderbuffer_name_handler, n, renderbuffers);
+    name_handler_alloc_names (egl_state_get_renderbuffer_name_handler (state), n, renderbuffers);
     GLuint *server_renderbuffers = (GLuint *)malloc (n * sizeof (GLuint));
     memcpy (server_renderbuffers, renderbuffers, n * sizeof (GLuint));
 
@@ -2274,7 +2275,7 @@ caching_client_glGenTextures (void* client, GLsizei n, GLuint *textures)
         return;
     }
 
-    name_handler_alloc_names (state->texture_name_handler, n, textures);
+    name_handler_alloc_names (egl_state_get_texture_name_handler (state), n, textures);
 
     GLuint *server_textures = (GLuint *)malloc (n * sizeof (GLuint));
     memcpy (server_textures, textures, n * sizeof (GLuint));

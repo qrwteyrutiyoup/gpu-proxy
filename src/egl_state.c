@@ -678,4 +678,29 @@ egl_state_destroy_cached_shader_object (egl_state_t *egl_state,
         shader_object);
 }
 
+name_handler_t *
+egl_state_get_shader_objects_name_handler (egl_state_t *egl_state)
+{
+    if (egl_state->share_context)
+        return egl_state->share_context->shader_objects_name_handler;
 
+    return egl_state->shader_objects_name_handler;
+}
+
+name_handler_t *
+egl_state_get_texture_name_handler (egl_state_t *egl_state)
+{
+    if (egl_state->share_context)
+        return egl_state->share_context->texture_name_handler;
+
+    return egl_state->texture_name_handler;
+}
+
+name_handler_t *
+egl_state_get_renderbuffer_name_handler (egl_state_t *egl_state)
+{
+    if (egl_state->share_context)
+        return egl_state->share_context->renderbuffer_name_handler;
+
+    return egl_state->renderbuffer_name_handler;
+}

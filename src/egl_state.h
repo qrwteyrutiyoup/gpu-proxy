@@ -105,7 +105,7 @@ struct egl_state {
     bool                    need_get_error;
     link_list_t           *shader_objects;         /* initial is NULL */
     vertex_attrib_list_t  vertex_attribs;    /* client states */
-    name_handler_t        *shader_objects_name_handler;
+    name_handler_t        *shader_objects_name_handler; /* shared across shared context */
 
 /* GL states from glGet () */
     /* used */
@@ -302,10 +302,10 @@ struct egl_state {
     HashTable    *framebuffer_cache;
     HashTable    *renderbuffer_cache;
 
-    name_handler_t *texture_name_handler;
-    name_handler_t *framebuffer_name_handler;
-    name_handler_t *renderbuffer_name_handler;
-    name_handler_t *buffer_name_handler;
+    name_handler_t *texture_name_handler;  /* shared across shared contexts */
+    name_handler_t *framebuffer_name_handler; /* no sharing */
+    name_handler_t *renderbuffer_name_handler; /* shared */
+    name_handler_t *buffer_name_handler; /* no sharing */
 
     bool         supports_element_index_uint;     /* GL_OES_element_index_uint */
     bool	 supports_bgra;	                  /* GL_EXT_texture_format_BGRA8888 */
@@ -438,4 +438,12 @@ private void
 egl_state_destroy_cached_shader_object (egl_state_t *egl_state,
                                         shader_object_t *shader_object);
 
+private name_handler_t *
+egl_state_get_shader_objects_name_handler (egl_state_t *egl_state);
+
+private name_handler_t *
+egl_state_get_texture_name_handler (egl_state_t *egl_state);
+
+private name_handler_t *
+egl_state_get_renderbuffer_name_handler (egl_state_t *egl_state);
 #endif /* GPUPROCESS_EGL_STATE_H */

@@ -14,6 +14,7 @@ program_new (GLuint id)
     new_program->location_cache = id ? new_hash_table(free) : NULL;
     new_program->attached_shaders = NULL;
     new_program->is_linked = false;
+    new_program->states = NULL;
     return new_program;
 }
 

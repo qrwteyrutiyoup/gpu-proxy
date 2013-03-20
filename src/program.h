@@ -71,6 +71,8 @@ typedef struct _program {
     shader_object_t base;
     HashTable       *attrib_location_cache;
     HashTable       *uniform_location_cache;
+
+    link_list_t     *states;
     /* XXX: location_cache is used to know if the location is valid
      * We could use a bloom filter in this case.
      */

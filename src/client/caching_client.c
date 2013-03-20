@@ -900,6 +900,15 @@ caching_client_glDeleteProgram (void *client,
     }
 
     name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, &program);
+
+    link_list_t *states = cached_program->states;
+    while (states) {
+        egl_state_t *attached_state = (egl_state_t *)states;
+        attached_state->current_program = 0;
+        attached_state->current_program_object = NULL;
+        link_list_delete_element (&cached_program->states, states);
+        states = states->next;
+    }
     egl_state_destroy_cached_shader_object (state, &cached_program->base);
     mutex_unlock (cached_shared_states_mutex);
 }
@@ -4078,11 +4087,47 @@ caching_client_glUseProgram (void* client,
 
     /* this maybe not right because this program may be invalid
      * object, we save here to save time in glGetError() */
-    if (state->current_program_object && 
-        state->current_program_object->base.mark_for_deletion)
-        egl_state_destroy_cached_shader_object (state, &state->current_program_object->base);
+    mutex_lock (cached_shared_states_mutex);
+    if (state->current_program_object) {
+        if (state->current_program_object->base.mark_for_deletion) {
+            /* delete shaders that are marked for deletion */
+            link_list_t *current = state->current_program_object->attached_shaders;
+            while (current) {
+                GLuint *shader_id = (GLuint *)current->data;
+                shader_object_t *cached_shader = egl_state_lookup_cached_shader_object (state, *shader_id);
+        
+                link_list_delete_element (&state->current_program_object->attached_shaders, current);
+                if (cached_shader && cached_shader->mark_for_deletion) {
+                    name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, shader_id);
+                    egl_state_destroy_cached_shader_object (state, cached_shader);
+                }
+                current = current->next;
+            }
+
+            name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, (GLuint *)&state->current_program);
+
+            link_list_t *states = state->current_program_object->states;
+            while (states) {
+                egl_state_t *attached_state = (egl_state_t *)states;
+                attached_state->current_program = 0;
+                attached_state->current_program_object = NULL;
+                link_list_delete_element (&state->current_program_object->states, states);
+                states = states->next;
+            }
+            egl_state_destroy_cached_shader_object (state, &state->current_program_object->base);
+        }
+        else {
+            link_list_delete_first_entry_matching_data (&state->current_program_object->states, state);
+        }
+    }
+
     state->current_program = program_id;
     state->current_program_object = new_program;
+
+    if (state->current_program_object != NULL) {
+        link_list_append (&state->current_program_object->states, state, NULL);
+    }
+    mutex_unlock (cached_shared_states_mutex);
 }
 
 static void

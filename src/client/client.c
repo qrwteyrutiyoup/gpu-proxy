@@ -73,9 +73,14 @@ start_pilot_server_thread_func (void *ptr)
                     break;
                 }
             }
-            /* force server to run on cpu1 */
-            if (cpu == 0)
-                cpu = 1;
+            /* force server to run on cpu2 */
+            if (available_cpus > 2) {
+                if (cpu == 0 || cpu == 1)
+                    cpu = 2;
+            } else {
+                if (cpu == 0)
+                    cpu = 1;
+            }
             if (cpu != 0) {
                 for (i = 0; i < available_cpus; i++) {
                     if (i != cpu)

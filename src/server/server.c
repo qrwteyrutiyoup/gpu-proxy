@@ -591,8 +591,10 @@ server_handle_eglmakecurrent (server_t *server, command_t *abstract_command)
        (command_eglmakecurrent_t *)abstract_command;
 
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+    if (abstract_command->use_timestamp) {
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command->result = server->dispatch.eglMakeCurrent (server, command->dpy,
                                                        command->draw,
@@ -605,8 +607,10 @@ server_handle_eglmakecurrent (server_t *server, command_t *abstract_command)
         _server_display_remove (server->egl_display);
     }
     
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
+    if (abstract_command->use_timestamp) {
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+    }
     mutex_unlock (server_state_mutex); 
 }
 

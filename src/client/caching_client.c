@@ -5726,13 +5726,16 @@ caching_client_eglMakeCurrent (void* client,
      * releasing the context in the thread, we can do async
      */
 //    if (display_and_context_match && matching_state) {
+    if (! display_and_context_match) {
         CLIENT(client)->needs_timestamp = true;
         client_send_log ();
+    }
 
         command_t *command = client_get_space_for_command (COMMAND_EGLMAKECURRENT);
         command_eglmakecurrent_init (command, display, draw, read, ctx);
         client_run_command_async (command);
-        clients_list_set_needs_timestamp ();
+        if (! display_and_context_match)
+            clients_list_set_needs_timestamp ();
 //    } else {
         /* Otherwise we must do this synchronously. */
 //        if (CACHING_CLIENT(client)->super_dispatch.eglMakeCurrent (client, display,

@@ -2460,10 +2460,18 @@ caching_client_glLinkProgram (void* client,
     if (!saved_program)
         return;
 
-    saved_program->is_linked = true;
-    hash_delete_all (saved_program->attrib_location_cache, NULL, NULL);
 
     CACHING_CLIENT(client)->super_dispatch.glLinkProgram (client, program);
+
+    GLint status;
+    CACHING_CLIENT(client)->super_dispatch.glGetProgramiv (client, program, GL_LINK_STATUS, &status);
+    if (status != GL_TRUE)
+        return;
+    else {
+        saved_program->is_linked = true;
+        hash_delete_all (saved_program->attrib_location_cache, NULL, NULL);
+    }
+
 }
 
 static GLint
@@ -4071,15 +4079,8 @@ caching_client_glUseProgram (void* client,
             return;
 
         if (! new_program->is_linked) {
-            GLint status;
-            CACHING_CLIENT(client)->super_dispatch.glGetProgramiv (client, program_id, GL_LINK_STATUS, &status);
-
-            if (status != GL_TRUE) {
-                caching_client_glSetError (client, GL_INVALID_OPERATION);
-                return;
-            }
-            else
-                new_program->is_linked = true;
+            caching_client_glSetError (client, GL_INVALID_OPERATION);
+            return;
         }
     }
 

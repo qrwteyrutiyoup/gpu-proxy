@@ -5682,7 +5682,6 @@ caching_client_eglMakeCurrent (void* client,
 {
     INSTRUMENT();
 
-    bool use_timestamp = false;
     /* send log */
 
     /* First detect situations where we are not changing the context. */
@@ -5731,10 +5730,8 @@ caching_client_eglMakeCurrent (void* client,
     if (! display_and_context_match)
         CLIENT(client)->needs_timestamp = true;
 
-    if (CLIENT(client)->needs_timestamp == true) {
-        use_timestamp = true;
+    if (CLIENT(client)->needs_timestamp == true)
         client_send_log ();
-    }
 
         command_t *command = client_get_space_for_command (COMMAND_EGLMAKECURRENT);
         command_eglmakecurrent_init (command, display, draw, read, ctx);

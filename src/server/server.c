@@ -1417,8 +1417,8 @@ server_handle_log (server_t *server, command_t *abstract_command)
     command_log_t *command = (command_log_t *)abstract_command;
 
     mutex_lock (server_state_mutex);
-    command->result = true;
     _call_order_list_append (abstract_command->server_id);
+    command->result = true;
     mutex_unlock (server_state_mutex);
 }
     

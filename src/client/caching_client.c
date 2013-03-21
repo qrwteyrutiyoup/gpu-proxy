@@ -57,9 +57,11 @@ caching_client_does_index_overflow (void* client,
     if (state->max_vertex_attribs_queried)
         goto FINISH;
 
-    CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, GL_MAX_VERTEX_ATTRIBS,
-                                                          &state->max_vertex_attribs);
-    state->max_vertex_attribs_queried = true;
+    if (state->max_vertex_attribs_queried == false) {
+        CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, GL_MAX_VERTEX_ATTRIBS,
+                                                              &state->max_vertex_attribs);
+        state->max_vertex_attribs_queried = true;
+    }
 
 FINISH:
     if (index < state->max_vertex_attribs)
@@ -1533,6 +1535,8 @@ caching_client_glSetVertexAttribArray (void* client,
                                        egl_state_t *state,
                                        GLboolean enable)
 {
+    INSTRUMENT();
+
     vertex_attrib_list_t *attrib_list = &state->vertex_attribs;
     vertex_attrib_t *attribs = attrib_list->attribs;
     int count = attrib_list->count;

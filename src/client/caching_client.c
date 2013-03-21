@@ -330,6 +330,7 @@ caching_client_glBindFramebuffer (void* client, GLenum target, GLuint framebuffe
 
     if (target != GL_FRAMEBUFFER) {
         caching_client_glSetError (client, GL_INVALID_ENUM);
+        return;
     }
 
     CACHING_CLIENT(client)->super_dispatch.glBindFramebuffer (client, target, framebuffer);
@@ -351,6 +352,7 @@ caching_client_glBindRenderbuffer (void* client, GLenum target, GLuint renderbuf
 
     if (target != GL_RENDERBUFFER) {
         caching_client_glSetError (client, GL_INVALID_ENUM);
+        return;
     }
 
     CACHING_CLIENT(client)->super_dispatch.glBindRenderbuffer (client, target, renderbuffer);
@@ -391,6 +393,18 @@ caching_client_glBindTexture (void* client, GLenum target, GLuint texture)
         name_handler_alloc_name (egl_state_get_texture_name_handler (state), texture);
         egl_state_create_cached_texture (state, texture);
         mutex_unlock (cached_shared_states_mutex);
+    }
+
+    texture_t *tex_obj = egl_state_lookup_cached_texture (state, texture);
+
+    if (tex_obj->initialized && tex_obj->target != target) {
+        caching_client_glSetError (client, GL_INVALID_OPERATION);
+        return;
+    }
+
+    if (!tex_obj->initialized) {
+        tex_obj->initialized = true;
+        tex_obj->target = target;
     }
 
     CACHING_CLIENT(client)->super_dispatch.glBindTexture (client, target, texture);
@@ -1360,7 +1374,6 @@ caching_client_glDeleteTextures (void* client, GLsizei n, const GLuint *textures
     for (i = 0; i < n; i++) {
         if (textures[i] == 0)
             continue;
-
         tex = egl_state_lookup_cached_texture (state, textures[i]);
         if (tex) 
             framebuffer = egl_state_lookup_cached_framebuffer (state, tex->framebuffer_id);
@@ -2197,7 +2210,7 @@ caching_client_glFramebufferTexture2D (void* client,
                                        GLint level)
 {
     texture_t *tex; 
-    GLuint framebuffer_id;
+    GLuint framebuffer_id = 0;
 
     INSTRUMENT();
     egl_state_t *state = client_get_current_state (CLIENT (client));
@@ -2208,6 +2221,7 @@ caching_client_glFramebufferTexture2D (void* client,
         caching_client_glSetError (client, GL_INVALID_ENUM);
         return;
     }
+
 
     CACHING_CLIENT(client)->super_dispatch.glFramebufferTexture2D (client, target, attachment,
                                                                    textarget, texture, level);
@@ -2347,8 +2361,9 @@ caching_client_glGenTextures (void* client, GLsizei n, GLuint *textures)
     name_handler_alloc_names (egl_state_get_texture_name_handler (state), n, textures);
     /* add textures to cache */
     int i;
-    for (i = 0; i < n; i++)
+    for (i = 0; i < n; i++) {
         egl_state_create_cached_texture (state, textures[i]);
+    }
     mutex_unlock (cached_shared_states_mutex);
 
     GLuint *server_textures = (GLuint *)malloc (n * sizeof (GLuint));
@@ -3546,7 +3561,13 @@ caching_client_glTexImage2D (void* client, GLenum target, GLint level,
     texture_t *texture = egl_state_lookup_cached_texture (state, tex_id);
     if (! texture)
         caching_client_set_needs_get_error (CLIENT (client));
+    else if (texture->target != target && texture->initialized) {
+        caching_client_glSetError (client, GL_INVALID_OPERATION);
+        return;
+    }
     else {
+        texture->target = target;
+        texture->initialized = true;
         texture->internal_format = internalformat;
         texture->width = width;
         texture->height = height;
@@ -3622,7 +3643,7 @@ caching_client_glTexSubImage2D (void* client,
         tex_id = state->texture_binding[1];
 
     texture_t *texture = egl_state_lookup_cached_texture (state, tex_id);
-    if (! texture) {
+    if (! texture || texture->target != target) {
         caching_client_glSetError (client, GL_INVALID_OPERATION);
         return;
     } else {
@@ -3639,7 +3660,6 @@ caching_client_glTexSubImage2D (void* client,
         caching_client_set_needs_get_error (CLIENT (client));
 
     /* FIXME: we need to check level */
-
     CACHING_CLIENT(client)->super_dispatch.glTexSubImage2D (client, target, level, xoffset, yoffset,
                                                             width, height, format, type, pixels);
 }

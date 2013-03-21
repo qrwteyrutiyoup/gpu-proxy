@@ -38,6 +38,8 @@ typedef struct vertex_attrib_list
 } vertex_attrib_list_t;
 
 typedef struct _texture {
+    GLenum                  target;
+    bool                    initialized;
     GLuint                  framebuffer_id;
     GLuint                  id;
     GLenum                  internal_format;

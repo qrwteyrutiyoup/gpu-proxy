@@ -514,6 +514,8 @@ static texture_t *
 _create_texture (GLuint id)
 {
     texture_t *tex = (texture_t *) malloc (sizeof (texture_t));
+    tex->target = GL_TEXTURE_2D;
+    tex->initialized = false;
     tex->framebuffer_id = 0;
     tex->id = id;
     tex->width = 0;

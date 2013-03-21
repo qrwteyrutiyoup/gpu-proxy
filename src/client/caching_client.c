@@ -5681,6 +5681,8 @@ caching_client_eglMakeCurrent (void* client,
                                EGLContext ctx)
 {
     INSTRUMENT();
+
+    bool use_timestamp = false;
     /* send log */
 
     /* First detect situations where we are not changing the context. */
@@ -5726,8 +5728,11 @@ caching_client_eglMakeCurrent (void* client,
      * releasing the context in the thread, we can do async
      */
 //    if (display_and_context_match && matching_state) {
-    if (! display_and_context_match) {
+    if (! display_and_context_match)
         CLIENT(client)->needs_timestamp = true;
+
+    if (CLIENT(client)->needs_timestamp == true) {
+        use_timestamp = true;
         client_send_log ();
     }
 

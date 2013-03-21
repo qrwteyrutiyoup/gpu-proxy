@@ -5386,20 +5386,14 @@ caching_client_glGetFloatv (void* client, GLenum pname, GLfloat *params)
         return;
 
     switch (pname) {
-    case GL_LINE_WIDTH:
-       *params = state->line_width;
+    case GL_ACTIVE_TEXTURE:
+        *params = state->active_texture;
         break;
-    case GL_COLOR_CLEAR_VALUE:
-        params[0] = state->color_clear_value[0];
-        params[1] = state->color_clear_value[1];
-        params[2] = state->color_clear_value[2];
-        params[3] = state->color_clear_value[3];
+    case GL_ARRAY_BUFFER_BINDING:
+        *params = state->array_buffer_binding;
         break;
-    case GL_DEPTH_CLEAR_VALUE:
-       *params = state->depth_clear_value;
-        break;
-    case GL_BLEND_DST_ALPHA:
-       *params = state->blend_dst[1];
+    case GL_BLEND:
+        *params = state->blend;
         break;
     case GL_BLEND_COLOR:
         params[0] = state->blend_color[0];
@@ -5407,21 +5401,276 @@ caching_client_glGetFloatv (void* client, GLenum pname, GLfloat *params)
         params[2] = state->blend_color[2];
         params[3] = state->blend_color[3];
         break;
+    case GL_BLEND_DST_ALPHA:
+        *params = state->blend_dst[1];
+        break;
     case GL_BLEND_DST_RGB:
-       *params = state->blend_dst[0];
+        *params = state->blend_dst[0];
+        break;
+    case GL_BLEND_EQUATION_ALPHA:
+        *params = state->blend_equation[1];
+        break;
+    case GL_BLEND_EQUATION_RGB:
+        *params = state->blend_equation[0];
+        break;
+    case GL_BLEND_SRC_ALPHA:
+        *params = state->blend_src[1];
+        break;
+    case GL_BLEND_SRC_RGB:
+        *params = state->blend_src[0];
+        break;
+    case GL_COLOR_CLEAR_VALUE:
+        params[0] = state->color_clear_value[0];
+        params[1] = state->color_clear_value[1];
+        params[2] = state->color_clear_value[2];
+        params[3] = state->color_clear_value[3];
+        break;
+    case GL_COLOR_WRITEMASK:
+        params[0] = state->color_writemask[0];
+        params[1] = state->color_writemask[1];
+        params[2] = state->color_writemask[2];
+        params[3] = state->color_writemask[3];
+        break;
+    case GL_CULL_FACE:
+        *params = state->cull_face;
+        break;
+    case GL_CULL_FACE_MODE:
+        *params = state->cull_face_mode;
+        break;
+    case GL_CURRENT_PROGRAM:
+        *params = state->current_program;
+        break;
+    case GL_DEPTH_CLEAR_VALUE:
+        *params = state->depth_clear_value;
+        break;
+    case GL_DEPTH_FUNC:
+        *params = state->depth_func;
         break;
     case GL_DEPTH_RANGE:
         params[0] = state->depth_range[0];
         params[1] = state->depth_range[1];
         break;
-    case GL_BLEND_SRC_ALPHA:
-       *params = state->blend_src[1];
+    case GL_DEPTH_TEST:
+        *params = state->depth_test;
         break;
-    case GL_BLEND_SRC_RGB:
-       *params = state->blend_src[0];
+    case GL_DEPTH_WRITEMASK:
+        *params = state->depth_writemask;
+        break;
+    case GL_DITHER:
+        *params = state->dither;
+        break;
+    case GL_ELEMENT_ARRAY_BUFFER_BINDING:
+        *params = state->element_array_buffer_binding;
+        break;
+    case GL_FRAMEBUFFER_BINDING:
+        *params = state->framebuffer_binding;
+        break;
+    case GL_FRONT_FACE:
+        *params = state->front_face;
+        break;
+    case GL_GENERATE_MIPMAP_HINT:
+        *params = state->generate_mipmap_hint;
+        break;
+    case GL_LINE_WIDTH:
+       *params = state->line_width;
+        break;
+    case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
+        if (! state->max_vertex_texture_image_units_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
+            state->max_vertex_texture_image_units = *params;
+            state->max_vertex_texture_image_units_queried = true;
+        } else
+           *params = state->max_vertex_texture_image_units;
+        break;
+    case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
+        if (! state->max_fragment_uniform_vectors_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
+            state->max_fragment_uniform_vectors = *params;
+            state->max_fragment_uniform_vectors_queried = true;
+        } else
+            *params = state->max_fragment_uniform_vectors;
+        break;
+    case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
+        if (! state->max_cube_map_texture_size_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
+            state->max_cube_map_texture_size = *params;
+            state->max_cube_map_texture_size_queried = true;
+        } else
+            *params = state->max_cube_map_texture_size;
+        break;
+    case GL_MAX_RENDERBUFFER_SIZE:
+        if (! state->max_renderbuffer_size_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
+            state->max_renderbuffer_size = *params;
+            state->max_renderbuffer_size_queried = true;
+        } else
+            *params = state->max_renderbuffer_size;
+        break;
+    case GL_MAX_TEXTURE_IMAGE_UNITS:
+        if (! state->max_texture_image_units_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
+            state->max_texture_image_units = *params;
+            state->max_texture_image_units_queried = true;
+        } else
+            *params = state->max_texture_image_units;
+        break;
+    case GL_MAX_TEXTURE_SIZE:
+        if (! state->max_texture_size_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
+            state->max_texture_size = *params;
+            state->max_texture_size_queried = true;
+        } else
+            *params = state->max_texture_size;
+        break;
+    case GL_MAX_VARYING_VECTORS:
+        if (! state->max_varying_vectors_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
+            state->max_varying_vectors = *params;
+            state->max_varying_vectors_queried = true;
+        } else
+            *params = state->max_varying_vectors;
+        break;
+    case GL_MAX_VERTEX_ATTRIBS:
+        if (! state->max_vertex_attribs_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
+            state->max_vertex_attribs = *params;
+            state->max_vertex_attribs_queried = true;
+        } else
+            *params = state->max_vertex_attribs;
+        break;
+    case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:
+        if (! state->max_vertex_texture_image_units_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
+            state->max_vertex_texture_image_units = *params;
+            state->max_vertex_texture_image_units_queried = true;
+        } else
+            *params = state->max_vertex_texture_image_units;
+        break;
+    case GL_MAX_VERTEX_UNIFORM_VECTORS:
+        if (! state->max_vertex_uniform_vectors_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
+            state->max_vertex_uniform_vectors = *params;
+            state->max_vertex_uniform_vectors_queried = true;
+        } else
+            *params = state->max_vertex_uniform_vectors;
+        break;
+    case GL_PACK_ALIGNMENT:
+        *params = state->pack_alignment;
         break;
     case GL_POLYGON_OFFSET_FACTOR:
         *params = state->polygon_offset_factor;
+        break;
+    case GL_POLYGON_OFFSET_FILL:
+        *params = state->polygon_offset_fill;
+        break;
+    case GL_POLYGON_OFFSET_UNITS:
+        *params = state->polygon_offset_units;
+        break;
+    case GL_RENDERBUFFER_BINDING:
+        *params = state->renderbuffer_binding;
+        break;
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+        *params = state->sample_alpha_to_coverage;
+        break;
+    case GL_SAMPLE_COVERAGE:
+        *params = state->sample_coverage;
+        break;
+    case GL_SAMPLE_COVERAGE_INVERT:
+        *params = state->sample_coverage_invert;
+        break;
+    case GL_SAMPLE_COVERAGE_VALUE:
+	*params = state->sample_coverage_value;
+        break;
+    case GL_SCISSOR_BOX:
+        params[0] = state->scissor_box[0];
+        params[1] = state->scissor_box[1];
+        params[2] = state->scissor_box[2];
+        params[3] = state->scissor_box[3];
+        break;
+    case GL_SCISSOR_TEST:
+        *params = state->scissor_test;
+        break;
+    case GL_STENCIL_BACK_FAIL:
+        *params = state->stencil_back_fail;
+        break;
+    case GL_STENCIL_BACK_FUNC:
+        *params = state->stencil_back_func;
+        break;
+    case GL_STENCIL_BACK_PASS_DEPTH_PASS:
+        *params = state->stencil_back_pass_depth_pass;
+        break;
+    case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
+        *params = state->stencil_back_pass_depth_fail;
+        break;
+    case GL_STENCIL_BACK_REF:
+        *params = state->stencil_back_ref;
+        break;
+    case GL_STENCIL_BACK_VALUE_MASK:
+        *params = state->stencil_back_value_mask;
+        break;
+    case GL_STENCIL_BACK_WRITEMASK:
+        *params = state->stencil_back_writemask;
+        break;
+    case GL_STENCIL_CLEAR_VALUE:
+        *params = state->stencil_clear_value;
+        break;
+    case GL_STENCIL_FAIL:
+        *params = state->stencil_fail;
+        break;
+    case GL_STENCIL_FUNC:
+        *params = state->stencil_func;
+        break;
+    case GL_STENCIL_PASS_DEPTH_FAIL:
+        *params = state->stencil_pass_depth_fail;
+        break;
+    case GL_STENCIL_PASS_DEPTH_PASS:
+        *params = state->stencil_pass_depth_pass;
+        break;
+    case GL_STENCIL_REF:
+        *params = state->stencil_ref;
+        break;
+    case GL_STENCIL_TEST:
+        *params = state->stencil_test;
+        break;
+    case GL_STENCIL_VALUE_MASK:
+        *params = state->stencil_value_mask;
+        break;
+    case GL_STENCIL_WRITEMASK:
+        *params = state->stencil_writemask;
+        break;
+    case GL_TEXTURE_BINDING_2D:
+        *params = state->texture_binding[0];
+        break;
+    case GL_TEXTURE_BINDING_CUBE_MAP:
+        *params = state->texture_binding[1];
+        break;
+    case GL_TEXTURE_BINDING_3D_OES:
+        *params = state->texture_binding_3d;
+        break;
+    case GL_MAX_3D_TEXTURE_SIZE_OES:
+        if (! state->max_3d_texture_size_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
+            state->max_3d_texture_size = *params;
+            state->max_3d_texture_size_queried = true;
+        } else
+            *params = state->max_3d_texture_size;
+        break;
+    case GL_UNPACK_ALIGNMENT:
+        *params = state->unpack_alignment;
+        break;
+    case GL_VIEWPORT:
+        params[0] = state->viewport[0];
+        params[1] = state->viewport[1];
+        params[2] = state->viewport[2];
+        params[3] = state->viewport[3];
+        break;
+    case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT:
+       if (! state->max_texture_max_anisotropy_queried) {
+           CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
+           state->max_texture_max_anisotropy = *params;
+           state->max_texture_max_anisotropy_queried = true;
+       } else
+           *params = state->max_texture_max_anisotropy;
         break;
     default:
         CACHING_CLIENT(
@@ -5430,6 +5679,308 @@ caching_client_glGetFloatv (void* client, GLenum pname, GLfloat *params)
     }
 }
 
+static void
+caching_client_glGetIntegerv (void* client, GLenum pname, GLint *params)
+{
+    INSTRUMENT();
+
+    egl_state_t *state = client_get_current_state (CLIENT (client));
+    if (! state)
+        return;
+
+    switch (pname) {
+    case GL_ACTIVE_TEXTURE:
+        *params = state->active_texture;
+        break;
+    case GL_ARRAY_BUFFER_BINDING:
+        *params = state->array_buffer_binding;
+        break;
+    case GL_BLEND:
+        *params = state->blend;
+        break;
+    case GL_BLEND_COLOR:
+        params[0] = state->blend_color[0];
+        params[1] = state->blend_color[1];
+        params[2] = state->blend_color[2];
+        params[3] = state->blend_color[3];
+        break;
+    case GL_BLEND_DST_ALPHA:
+        *params = state->blend_dst[1];
+        break;
+    case GL_BLEND_DST_RGB:
+        *params = state->blend_dst[0];
+        break;
+    case GL_BLEND_EQUATION_ALPHA:
+        *params = state->blend_equation[1];
+        break;
+    case GL_BLEND_EQUATION_RGB:
+        *params = state->blend_equation[0];
+        break;
+    case GL_BLEND_SRC_ALPHA:
+        *params = state->blend_src[1];
+        break;
+    case GL_BLEND_SRC_RGB:
+        *params = state->blend_src[0];
+        break;
+    case GL_COLOR_CLEAR_VALUE:
+        params[0] = state->color_clear_value[0];
+        params[1] = state->color_clear_value[1];
+        params[2] = state->color_clear_value[2];
+        params[3] = state->color_clear_value[3];
+        break;
+    case GL_COLOR_WRITEMASK:
+        params[0] = state->color_writemask[0];
+        params[1] = state->color_writemask[1];
+        params[2] = state->color_writemask[2];
+        params[3] = state->color_writemask[3];
+        break;
+    case GL_CULL_FACE:
+        *params = state->cull_face;
+        break;
+    case GL_CULL_FACE_MODE:
+        *params = state->cull_face_mode;
+        break;
+    case GL_CURRENT_PROGRAM:
+        *params = state->current_program;
+        break;
+    case GL_DEPTH_CLEAR_VALUE:
+        *params = state->depth_clear_value;
+        break;
+    case GL_DEPTH_FUNC:
+        *params = state->depth_func;
+        break;
+    case GL_DEPTH_RANGE:
+        params[0] = state->depth_range[0];
+        params[1] = state->depth_range[1];
+        break;
+    case GL_DEPTH_TEST:
+        *params = state->depth_test;
+        break;
+    case GL_DEPTH_WRITEMASK:
+        *params = state->depth_writemask;
+        break;
+    case GL_DITHER:
+        *params = state->dither;
+        break;
+    case GL_ELEMENT_ARRAY_BUFFER_BINDING:
+        *params = state->element_array_buffer_binding;
+        break;
+    case GL_FRAMEBUFFER_BINDING:
+        *params = state->framebuffer_binding;
+        break;
+    case GL_FRONT_FACE:
+        *params = state->front_face;
+        break;
+    case GL_GENERATE_MIPMAP_HINT:
+        *params = state->generate_mipmap_hint;
+        break;
+    case GL_LINE_WIDTH:
+       *params = state->line_width;
+        break;
+    case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
+        if (! state->max_vertex_texture_image_units_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
+            state->max_vertex_texture_image_units = *params;
+            state->max_vertex_texture_image_units_queried = true;
+        } else
+           *params = state->max_vertex_texture_image_units;
+        break;
+    case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
+        if (! state->max_fragment_uniform_vectors_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
+            state->max_fragment_uniform_vectors = *params;
+            state->max_fragment_uniform_vectors_queried = true;
+        } else
+            *params = state->max_fragment_uniform_vectors;
+        break;
+    case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
+        if (! state->max_cube_map_texture_size_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
+            state->max_cube_map_texture_size = *params;
+            state->max_cube_map_texture_size_queried = true;
+        } else
+            *params = state->max_cube_map_texture_size;
+        break;
+    case GL_MAX_RENDERBUFFER_SIZE:
+        if (! state->max_renderbuffer_size_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
+            state->max_renderbuffer_size = *params;
+            state->max_renderbuffer_size_queried = true;
+        } else
+            *params = state->max_renderbuffer_size;
+        break;
+    case GL_MAX_TEXTURE_IMAGE_UNITS:
+        if (! state->max_texture_image_units_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
+            state->max_texture_image_units = *params;
+            state->max_texture_image_units_queried = true;
+        } else
+            *params = state->max_texture_image_units;
+        break;
+    case GL_MAX_TEXTURE_SIZE:
+        if (! state->max_texture_size_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
+            state->max_texture_size = *params;
+            state->max_texture_size_queried = true;
+        } else
+            *params = state->max_texture_size;
+        break;
+    case GL_MAX_VARYING_VECTORS:
+        if (! state->max_varying_vectors_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
+            state->max_varying_vectors = *params;
+            state->max_varying_vectors_queried = true;
+        } else
+            *params = state->max_varying_vectors;
+        break;
+    case GL_MAX_VERTEX_ATTRIBS:
+        if (! state->max_vertex_attribs_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
+            state->max_vertex_attribs = *params;
+            state->max_vertex_attribs_queried = true;
+        } else
+            *params = state->max_vertex_attribs;
+        break;
+    case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:
+        if (! state->max_vertex_texture_image_units_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
+            state->max_vertex_texture_image_units = *params;
+            state->max_vertex_texture_image_units_queried = true;
+        } else
+            *params = state->max_vertex_texture_image_units;
+        break;
+    case GL_MAX_VERTEX_UNIFORM_VECTORS:
+        if (! state->max_vertex_uniform_vectors_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
+            state->max_vertex_uniform_vectors = *params;
+            state->max_vertex_uniform_vectors_queried = true;
+        } else
+            *params = state->max_vertex_uniform_vectors;
+        break;
+    case GL_PACK_ALIGNMENT:
+        *params = state->pack_alignment;
+        break;
+    case GL_POLYGON_OFFSET_FACTOR:
+        *params = state->polygon_offset_factor;
+        break;
+    case GL_POLYGON_OFFSET_FILL:
+        *params = state->polygon_offset_fill;
+        break;
+    case GL_POLYGON_OFFSET_UNITS:
+        *params = state->polygon_offset_units;
+        break;
+    case GL_RENDERBUFFER_BINDING:
+        *params = state->renderbuffer_binding;
+        break;
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+        *params = state->sample_alpha_to_coverage;
+        break;
+    case GL_SAMPLE_COVERAGE:
+        *params = state->sample_coverage;
+        break;
+    case GL_SAMPLE_COVERAGE_INVERT:
+        *params = state->sample_coverage_invert;
+        break;
+    case GL_SAMPLE_COVERAGE_VALUE:
+	*params = state->sample_coverage_value;
+        break;
+    case GL_SCISSOR_BOX:
+        params[0] = state->scissor_box[0];
+        params[1] = state->scissor_box[1];
+        params[2] = state->scissor_box[2];
+        params[3] = state->scissor_box[3];
+        break;
+    case GL_SCISSOR_TEST:
+        *params = state->scissor_test;
+        break;
+    case GL_STENCIL_BACK_FAIL:
+        *params = state->stencil_back_fail;
+        break;
+    case GL_STENCIL_BACK_FUNC:
+        *params = state->stencil_back_func;
+        break;
+    case GL_STENCIL_BACK_PASS_DEPTH_PASS:
+        *params = state->stencil_back_pass_depth_pass;
+        break;
+    case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
+        *params = state->stencil_back_pass_depth_fail;
+        break;
+    case GL_STENCIL_BACK_REF:
+        *params = state->stencil_back_ref;
+        break;
+    case GL_STENCIL_BACK_VALUE_MASK:
+        *params = state->stencil_back_value_mask;
+        break;
+    case GL_STENCIL_BACK_WRITEMASK:
+        *params = state->stencil_back_writemask;
+        break;
+    case GL_STENCIL_CLEAR_VALUE:
+        *params = state->stencil_clear_value;
+        break;
+    case GL_STENCIL_FAIL:
+        *params = state->stencil_fail;
+        break;
+    case GL_STENCIL_FUNC:
+        *params = state->stencil_func;
+        break;
+    case GL_STENCIL_PASS_DEPTH_FAIL:
+        *params = state->stencil_pass_depth_fail;
+        break;
+    case GL_STENCIL_PASS_DEPTH_PASS:
+        *params = state->stencil_pass_depth_pass;
+        break;
+    case GL_STENCIL_REF:
+        *params = state->stencil_ref;
+        break;
+    case GL_STENCIL_TEST:
+        *params = state->stencil_test;
+        break;
+    case GL_STENCIL_VALUE_MASK:
+        *params = state->stencil_value_mask;
+        break;
+    case GL_STENCIL_WRITEMASK:
+        *params = state->stencil_writemask;
+        break;
+    case GL_TEXTURE_BINDING_2D:
+        *params = state->texture_binding[0];
+        break;
+    case GL_TEXTURE_BINDING_CUBE_MAP:
+        *params = state->texture_binding[1];
+        break;
+    case GL_TEXTURE_BINDING_3D_OES:
+        *params = state->texture_binding_3d;
+        break;
+    case GL_MAX_3D_TEXTURE_SIZE_OES:
+        if (! state->max_3d_texture_size_queried) {
+            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
+            state->max_3d_texture_size = *params;
+            state->max_3d_texture_size_queried = true;
+        } else
+            *params = state->max_3d_texture_size;
+        break;
+    case GL_UNPACK_ALIGNMENT:
+        *params = state->unpack_alignment;
+        break;
+    case GL_VIEWPORT:
+        params[0] = state->viewport[0];
+        params[1] = state->viewport[1];
+        params[2] = state->viewport[2];
+        params[3] = state->viewport[3];
+        break;
+    case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT:
+       if (! state->max_texture_max_anisotropy_queried) {
+           CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
+           state->max_texture_max_anisotropy = *params;
+           state->max_texture_max_anisotropy_queried = true;
+       } else
+           *params = state->max_texture_max_anisotropy;
+        break;
+    default:
+        CACHING_CLIENT(
+            client)->super_dispatch.glGetIntegerv (client, pname, params);
+        break;
+    }
+}
 static void
 caching_client_glGetBooleanv (void* client, GLenum pname, GLboolean *params)
 {
@@ -5466,202 +6017,6 @@ caching_client_glGetBooleanv (void* client, GLenum pname, GLboolean *params)
        break;
     default:
         CACHING_CLIENT(client)->super_dispatch.glGetBooleanv (client, pname, params);
-        break;
-    }
-}
-
-static void
-caching_client_glGetIntegerv (void* client, GLenum pname, GLint *params)
-{
-    INSTRUMENT();
-
-    egl_state_t *state = client_get_current_state (CLIENT (client));
-    if (! state)
-        return;
-
-    switch (pname) {
-    case GL_MAX_VARYING_VECTORS:
-        if (! state->max_varying_vectors_queried) {
-            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
-            state->max_varying_vectors = *params;
-            state->max_varying_vectors_queried = true;
-        } else
-            *params = state->max_varying_vectors;
-        break;
-    case GL_ACTIVE_TEXTURE:
-       *params = state->active_texture;
-        break;
-    case GL_GENERATE_MIPMAP_HINT:
-       *params = state->generate_mipmap_hint;
-        break;
-    case GL_BLEND_EQUATION_RGB:
-       *params = state->blend_equation[0];
-        break;
-    case GL_MAX_TEXTURE_IMAGE_UNITS:
-        if (! state->max_texture_image_units_queried) {
-            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
-            state->max_texture_image_units = *params;
-            state->max_texture_image_units_queried = true;
-        } else
-            *params = state->max_texture_image_units;
-        break;
-    case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
-       *params = state->stencil_back_pass_depth_fail;
-        break;
-    case GL_DEPTH_FUNC:
-       *params = state->depth_func;
-        break;
-    case GL_STENCIL_BACK_VALUE_MASK:
-       *params = state->stencil_value_mask;
-        break;
-    case GL_STENCIL_FAIL:
-       *params = state->stencil_fail;
-        break;
-    case GL_STENCIL_PASS_DEPTH_FAIL:
-       *params = state->stencil_pass_depth_fail;
-        break;
-    case GL_MAX_VERTEX_UNIFORM_VECTORS:
-        if (! state->max_vertex_uniform_vectors_queried) {
-            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
-            state->max_vertex_uniform_vectors = *params;
-            state->max_vertex_uniform_vectors_queried = true;
-        } else
-            *params = state->max_vertex_uniform_vectors;
-        break;
-    case GL_STENCIL_BACK_FAIL:
-       *params = state->stencil_back_fail;
-        break;
-    case GL_MAX_VERTEX_ATTRIBS:
-        if (! state->max_vertex_attribs_queried) {
-            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
-            state->max_vertex_attribs = *params;
-            state->max_vertex_attribs_queried = true;
-        } else
-            *params = state->max_vertex_attribs;
-        break;
-    case GL_UNPACK_SKIP_PIXELS:
-       *params = state->unpack_skip_pixels;
-        break;
-    case GL_VIEWPORT:
-        params[0] = state->viewport[0];
-        params[1] = state->viewport[1];
-        params[2] = state->viewport[2];
-        params[3] = state->viewport[3];
-        break;
-    case GL_STENCIL_CLEAR_VALUE:
-       *params = state->stencil_clear_value;
-        break;
-    case GL_VERTEX_ARRAY_BINDING_OES:
-       *params = state->vertex_array_binding;
-       break;
-    case GL_STENCIL_VALUE_MASK:
-       *params = state->stencil_value_mask;
-        break;
-    case GL_STENCIL_FUNC:
-       *params = state->stencil_func;
-        break;
-    case GL_STENCIL_WRITEMASK:
-       *params = state->stencil_writemask;
-        break;
-    case GL_STENCIL_BACK_PASS_DEPTH_PASS:
-       *params = state->stencil_back_pass_depth_pass;
-        break;
-    case GL_UNPACK_ROW_LENGTH:
-       *params = state->unpack_row_length;
-        break;
-    case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
-        if (! state->max_cube_map_texture_size_queried) {
-            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
-            state->max_cube_map_texture_size = *params;
-            state->max_cube_map_texture_size_queried = true;
-        } else
-           *params = state->max_cube_map_texture_size;
-        break;
-    case GL_CURRENT_PROGRAM:
-       *params = state->current_program;
-        break;
-    case GL_MAX_TEXTURE_SIZE:
-        if (! state->max_texture_size_queried) {
-            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
-            state->max_texture_size = *params;
-            state->max_texture_size_queried = true;
-        } else
-            *params = state->max_texture_size;
-        break;
-    case GL_BLEND_EQUATION_ALPHA:
-       *params = state->blend_equation[1];
-        break;
-    case GL_UNPACK_SKIP_ROWS:
-       *params = state->unpack_skip_rows;
-        break;
-    case GL_ELEMENT_ARRAY_BUFFER_BINDING:
-        *params = state->array_buffer_binding;
-        break;
-    case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:
-        if (! state->max_vertex_texture_image_units_queried) {
-            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
-            state->max_vertex_texture_image_units = *params;
-            state->max_vertex_texture_image_units_queried = true;
-        } else
-           *params = state->max_vertex_texture_image_units;
-       break;
-    case GL_MAX_RENDERBUFFER_SIZE:
-        if (! state->max_renderbuffer_size_queried) {
-            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
-            state->max_renderbuffer_size = *params;
-            state->max_renderbuffer_size_queried = true;
-        } else
-            *params = state->max_renderbuffer_size;
-       break;
-    case GL_SCISSOR_BOX:
-        params[0] = state->scissor_box[0];
-        params[1] = state->scissor_box[1];
-        params[2] = state->scissor_box[2];
-        params[3] = state->scissor_box[3];
-    case GL_STENCIL_PASS_DEPTH_PASS:
-       *params = state->stencil_pass_depth_pass;
-        break;
-    case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
-        if (! state->max_combined_texture_image_units_queried) {
-            CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
-            state->max_combined_texture_image_units = *params;
-            state->max_combined_texture_image_units_queried = true;
-        } else
-            *params = state->max_combined_texture_image_units;
-        break;
-    case GL_STENCIL_BACK_WRITEMASK:
-       *params = state->stencil_back_writemask;
-        break;
-    case GL_STENCIL_BACK_FUNC:
-       *params = state->stencil_back_func;
-        break;
-    case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
-       if (! state->max_texture_max_anisotropy_queried) {
-           CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
-           state->max_texture_max_anisotropy = *params;
-           state->max_texture_max_anisotropy_queried = true;
-       } else
-           *params = state->max_texture_max_anisotropy;
-        break;
-    case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT:
-       if (! state->max_texture_max_anisotropy_queried) {
-           CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
-           state->max_texture_max_anisotropy = *params;
-           state->max_texture_max_anisotropy_queried = true;
-       } else
-           *params = state->max_texture_max_anisotropy;
-        break;
-    case GL_STENCIL_BACK_REF:
-       *params = state->stencil_ref;
-        break;
-    case GL_STENCIL_REF:
-       *params = state->stencil_ref;
-        break;
-    case GL_ARRAY_BUFFER_BINDING:
-       *params = state->array_buffer_binding;
-       break;
-    default:
-        CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
         break;
     }
 }

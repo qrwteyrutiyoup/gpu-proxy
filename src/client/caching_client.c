@@ -5741,6 +5741,8 @@ caching_client_eglMakeCurrent (void* client,
         client_run_command_async (command);
         if (! display_and_context_match)
             clients_list_set_needs_timestamp ();
+        else
+            CLIENT(client)->needs_timestamp = false;
 //    } else {
         /* Otherwise we must do this synchronously. */
 //        if (CACHING_CLIENT(client)->super_dispatch.eglMakeCurrent (client, display,

@@ -5479,12 +5479,12 @@ caching_client_glGetFloatv (void* client, GLenum pname, GLfloat *params)
        *params = state->line_width;
         break;
     case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
-        if (! state->max_vertex_texture_image_units_queried) {
+        if (! state->max_combined_texture_image_units_queried) {
             CACHING_CLIENT(client)->super_dispatch.glGetFloatv (client, pname, params);
-            state->max_vertex_texture_image_units = *params;
-            state->max_vertex_texture_image_units_queried = true;
+            state->max_combined_texture_image_units = *params;
+            state->max_combined_texture_image_units_queried = true;
         } else
-           *params = state->max_vertex_texture_image_units;
+           *params = state->max_combined_texture_image_units;
         break;
     case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
         if (! state->max_fragment_uniform_vectors_queried) {
@@ -5782,12 +5782,12 @@ caching_client_glGetIntegerv (void* client, GLenum pname, GLint *params)
        *params = state->line_width;
         break;
     case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
-        if (! state->max_vertex_texture_image_units_queried) {
+        if (! state->max_combined_texture_image_units_queried) {
             CACHING_CLIENT(client)->super_dispatch.glGetIntegerv (client, pname, params);
-            state->max_vertex_texture_image_units = *params;
-            state->max_vertex_texture_image_units_queried = true;
+            state->max_combined_texture_image_units = *params;
+            state->max_combined_texture_image_units_queried = true;
         } else
-           *params = state->max_vertex_texture_image_units;
+           *params = state->max_combined_texture_image_units;
         break;
     case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
         if (! state->max_fragment_uniform_vectors_queried) {

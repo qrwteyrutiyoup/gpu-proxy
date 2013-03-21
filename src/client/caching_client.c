@@ -388,7 +388,7 @@ caching_client_glBindTexture (void* client, GLenum target, GLuint texture)
     }
 
     /* look up in cache */
-    if (texture != 0 && !egl_state_lookup_cached_texture (state, texture)) {
+    if (!texture && !egl_state_lookup_cached_texture (state, texture)) {
         mutex_lock (cached_shared_states_mutex);
         name_handler_alloc_name (egl_state_get_texture_name_handler (state), texture);
         egl_state_create_cached_texture (state, texture);
@@ -396,15 +396,16 @@ caching_client_glBindTexture (void* client, GLenum target, GLuint texture)
     }
 
     texture_t *tex_obj = egl_state_lookup_cached_texture (state, texture);
+    if (!texture) {
+        if (tex_obj->initialized && tex_obj->target != target) {
+            caching_client_glSetError (client, GL_INVALID_OPERATION);
+            return;
+        }
 
-    if (tex_obj->initialized && tex_obj->target != target) {
-        caching_client_glSetError (client, GL_INVALID_OPERATION);
-        return;
-    }
-
-    if (!tex_obj->initialized) {
-        tex_obj->initialized = true;
-        tex_obj->target = target;
+        if (!tex_obj->initialized) {
+            tex_obj->initialized = true;
+            tex_obj->target = target;
+        }
     }
 
     CACHING_CLIENT(client)->super_dispatch.glBindTexture (client, target, texture);

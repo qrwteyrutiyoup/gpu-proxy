@@ -142,8 +142,7 @@ struct egl_state {
     GLint         cull_face_mode;               /* initial GL_BACK */
 
     /* used */
-    GLint         current_program;              /* initial 0 */
-    program_t     *current_program_object;
+    program_t     *current_program;
 
     GLint         depth_bits;
     /* used */

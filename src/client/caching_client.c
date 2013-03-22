@@ -896,7 +896,8 @@ caching_client_glDeleteProgram (void *client,
 
     CACHING_CLIENT(client)->super_dispatch.glDeleteProgram (client, program);
 
-    if (cached_program->base.id == state->current_program) {
+    if (state->current_program &&
+        cached_program->base.id == state->current_program->base.id) {
         cached_program->base.mark_for_deletion = true;
         mutex_unlock (cached_shared_states_mutex);
         return;
@@ -921,8 +922,7 @@ caching_client_glDeleteProgram (void *client,
     link_list_t *states = cached_program->states;
     while (states) {
         egl_state_t *attached_state = (egl_state_t *)states;
-        attached_state->current_program = 0;
-        attached_state->current_program_object = NULL;
+        attached_state->current_program = NULL;
         link_list_delete_element (&cached_program->states, states);
         states = states->next;
     }
@@ -3687,12 +3687,12 @@ _synthesize_uniform_error(void *client,
     if (! state)
         return 0;
 
-    if (! state->current_program_object) {
+    if (! state->current_program) {
         caching_client_glSetError (client, GL_INVALID_OPERATION);
         return 0;
     }
 
-    location_properties_t *location_properties = hash_lookup(state->current_program_object->location_cache, location);
+    location_properties_t *location_properties = hash_lookup(state->current_program->location_cache, location);
     if (! location_properties) {
         caching_client_glSetError (client, GL_INVALID_OPERATION);
         return 0;
@@ -4103,7 +4103,8 @@ caching_client_glUseProgram (void* client,
     egl_state_t *state = client_get_current_state (CLIENT (client));
     if (! state)
         return;
-    if (state->current_program == program_id)
+    if (state->current_program &&
+        state->current_program->base.id == program_id)
         return;
 
     /* From glUseProgram doc: if program is zero, then the current
@@ -4129,15 +4130,15 @@ caching_client_glUseProgram (void* client,
     /* this maybe not right because this program may be invalid
      * object, we save here to save time in glGetError() */
     mutex_lock (cached_shared_states_mutex);
-    if (state->current_program_object) {
-        if (state->current_program_object->base.mark_for_deletion) {
+    if (state->current_program) {
+        if (state->current_program->base.mark_for_deletion) {
             /* delete shaders that are marked for deletion */
-            link_list_t *current = state->current_program_object->attached_shaders;
+            link_list_t *current = state->current_program->attached_shaders;
             while (current) {
                 GLuint *shader_id = (GLuint *)current->data;
                 shader_object_t *cached_shader = egl_state_lookup_cached_shader_object (state, *shader_id);
         
-                link_list_delete_element (&state->current_program_object->attached_shaders, current);
+                link_list_delete_element (&state->current_program->attached_shaders, current);
                 if (cached_shader && cached_shader->mark_for_deletion) {
                     name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, shader_id);
                     egl_state_destroy_cached_shader_object (state, cached_shader);
@@ -4147,26 +4148,25 @@ caching_client_glUseProgram (void* client,
 
             name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, (GLuint *)&state->current_program);
 
-            link_list_t *states = state->current_program_object->states;
+            link_list_t *states = state->current_program->states;
             while (states) {
                 egl_state_t *attached_state = (egl_state_t *)states;
                 attached_state->current_program = 0;
-                attached_state->current_program_object = NULL;
-                link_list_delete_element (&state->current_program_object->states, states);
+                attached_state->current_program = NULL;
+                link_list_delete_element (&state->current_program->states, states);
                 states = states->next;
             }
-            egl_state_destroy_cached_shader_object (state, &state->current_program_object->base);
+            egl_state_destroy_cached_shader_object (state, &state->current_program->base);
         }
         else {
-            link_list_delete_first_entry_matching_data (&state->current_program_object->states, state);
+            link_list_delete_first_entry_matching_data (&state->current_program->states, state);
         }
     }
 
-    state->current_program = program_id;
-    state->current_program_object = new_program;
+    state->current_program = new_program;
 
-    if (state->current_program_object != NULL) {
-        link_list_append (&state->current_program_object->states, state, NULL);
+    if (state->current_program != NULL) {
+        link_list_append (&state->current_program->states, state, NULL);
     }
     mutex_unlock (cached_shared_states_mutex);
 }
@@ -5476,7 +5476,10 @@ caching_client_glGetFloatv (void* client, GLenum pname, GLfloat *params)
         *params = state->cull_face_mode;
         break;
     case GL_CURRENT_PROGRAM:
-        *params = state->current_program;
+        if (state->current_program)
+            *params = state->current_program->base.id;
+        else
+            *params = 0;
         break;
     case GL_DEPTH_CLEAR_VALUE:
         *params = state->depth_clear_value;
@@ -5779,7 +5782,10 @@ caching_client_glGetIntegerv (void* client, GLenum pname, GLint *params)
         *params = state->cull_face_mode;
         break;
     case GL_CURRENT_PROGRAM:
-        *params = state->current_program;
+        if (state->current_program)
+            *params = state->current_program->base.id;
+        else
+            *params = 0;
         break;
     case GL_DEPTH_CLEAR_VALUE:
         *params = state->depth_clear_value;

@@ -630,7 +630,7 @@ egl_state_delete_cached_renderbuffer (egl_state_t *egl_state,
         hash_remove (egl_state_get_texture_cache (egl_state), renderbuffer_id);
 }
 
-static link_list_t **
+link_list_t **
 egl_state_get_shader_object_list (egl_state_t *egl_state)
 {
     if (egl_state->share_context)

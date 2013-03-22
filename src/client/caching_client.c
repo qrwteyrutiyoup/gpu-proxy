@@ -977,7 +977,7 @@ caching_client_glDeleteShader (void *client,
 
     mutex_lock (cached_shared_states_mutex);
     shader_object_t *cached_shader = egl_state_lookup_cached_shader_object (state, shader);
-    if (!cached_shader) {
+    if (!cached_shader || cached_shader->type == SHADER_OBJECT_PROGRAM) {
         caching_client_glSetError (client, GL_INVALID_VALUE);
         mutex_unlock (cached_shared_states_mutex);
         return;
@@ -985,22 +985,35 @@ caching_client_glDeleteShader (void *client,
 
     CACHING_CLIENT(client)->super_dispatch.glDeleteShader (client, shader);
 
-    if (! state->current_program_object) {
-        name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, &shader);
-        egl_state_destroy_cached_shader_object (state, cached_shader);
-        mutex_unlock (cached_shared_states_mutex);
-        return;
-    }
+    link_list_t **program_list = egl_state_get_shader_object_list (state);
+    if (program_list) {
+        link_list_t *current_program_element = *program_list;
+        while (current_program_element) {
+            program_t *current_program = (program_t*) current_program_element->data;
+            if (current_program->base.type != SHADER_OBJECT_PROGRAM) {
+                current_program_element = current_program_element->next;
+                continue;
+            }
 
-    link_list_t *current = state->current_program_object->attached_shaders;
-    while (current) {
-        GLuint *shader_id = (GLuint *)current->data;
-        if (*shader_id == shader) {
-            cached_shader->mark_for_deletion = true;
-            mutex_unlock (cached_shared_states_mutex);
-            return;
+            link_list_t *current_shader = current_program->attached_shaders;
+            while (current_shader) {
+                GLuint *shader_id = (GLuint *)current_shader->data;
+                if (*shader_id == shader) {
+                    link_list_delete_element (&current_program->attached_shaders, current_shader);
+                    shader_object_t *cached_shader = egl_state_lookup_cached_shader_object (state, shader);
+                    if (cached_shader->mark_for_deletion) {
+                        name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, &shader);
+                        egl_state_destroy_cached_shader_object (state, cached_shader);
+                    } else
+                        cached_shader->mark_for_deletion = true;
+
+                    mutex_unlock (cached_shared_states_mutex);
+                    return;
+                }
+                current_shader = current_shader->next;
+            }
+            current_program_element = current_program_element->next;
         }
-        current = current->next;
     }
 
     name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, &shader);

@@ -426,6 +426,9 @@ private void
 egl_state_delete_cached_renderbuffer (egl_state_t *egl_state,
                                       GLuint renderbuffer_id);
 
+private link_list_t **
+egl_state_get_shader_object_list (egl_state_t *egl_state);
+
 private shader_object_t *
 egl_state_lookup_cached_shader_object (egl_state_t *egl_state,
                                        GLuint shader_object_id);

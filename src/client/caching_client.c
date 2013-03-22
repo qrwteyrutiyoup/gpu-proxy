@@ -999,14 +999,8 @@ caching_client_glDeleteShader (void *client,
             while (current_shader) {
                 GLuint *shader_id = (GLuint *)current_shader->data;
                 if (*shader_id == shader) {
-                    link_list_delete_element (&current_program->attached_shaders, current_shader);
                     shader_object_t *cached_shader = egl_state_lookup_cached_shader_object (state, shader);
-                    if (cached_shader->mark_for_deletion) {
-                        name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, &shader);
-                        egl_state_destroy_cached_shader_object (state, cached_shader);
-                    } else
-                        cached_shader->mark_for_deletion = true;
-
+                    cached_shader->mark_for_deletion = true;
                     mutex_unlock (cached_shared_states_mutex);
                     return;
                 }

@@ -2257,7 +2257,7 @@ caching_client_glDrawElements (void* client,
 
     if (!copy_indices) {
         vertex_attrib_list_t *attrib_list = &state->vertex_attribs;
-        if (attrib_list->last_pointer)
+        if (attrib_list->last_index_pointer)
             elements_count = _get_elements_count (type, (char *)state->element_array_buffer_binding_object->data, count);
         else
             elements_count = 0;

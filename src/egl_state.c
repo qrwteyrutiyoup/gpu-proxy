@@ -5,6 +5,17 @@
 
 static link_list_t *null_list = NULL;
 
+static void
+_free_array_buffer (void *data)
+{
+    array_buffer_t *buffer = (array_buffer_t *)data;
+
+    if (buffer->data)
+        free (buffer->data);
+
+    free (buffer);
+}
+
 void
 egl_state_init (egl_state_t *state,
                 EGLDisplay display,
@@ -94,6 +105,7 @@ egl_state_init (egl_state_t *state,
     state->dither = GL_TRUE;
 
     state->element_array_buffer_binding = 0;
+    state->element_array_buffer_binding_object = NULL;
     state->framebuffer_binding = 0;
     state->renderbuffer_binding = 0;
     
@@ -149,6 +161,8 @@ egl_state_init (egl_state_t *state,
     state->texture_cache = new_hash_table(free);
     state->framebuffer_cache = new_hash_table (free);
     state->renderbuffer_cache = new_hash_table (free);
+    state->element_array_buffer_cache = new_hash_table (_free_array_buffer);
+    state->element_array_buffer_binding_object = NULL;
 
     state->shader_objects_name_handler = name_handler_create ();
     state->texture_name_handler = name_handler_create ();
@@ -168,6 +182,7 @@ egl_state_new (EGLDisplay display, EGLContext context)
     return new_state;
 }
 
+/* FIXME: free hashtable */
 void
 egl_state_destroy (void *abstract_state)
 {
@@ -586,7 +601,7 @@ egl_state_delete_cached_framebuffer (egl_state_t *egl_state,
                                      GLuint framebuffer_id)
 {
     if (framebuffer_id != 0)
-        hash_remove (egl_state_get_texture_cache (egl_state), framebuffer_id);
+        hash_remove (egl_state_get_framebuffer_cache (egl_state), framebuffer_id);
 }
 
 static HashTable *
@@ -626,7 +641,49 @@ egl_state_delete_cached_renderbuffer (egl_state_t *egl_state,
                                       GLuint renderbuffer_id)
 {
     if (renderbuffer_id != 0)
-        hash_remove (egl_state_get_texture_cache (egl_state), renderbuffer_id);
+        hash_remove (egl_state_get_renderbuffer_cache (egl_state), renderbuffer_id);
+}
+
+static HashTable *
+egl_state_get_element_array_buffer_cache (egl_state_t *egl_state)
+{
+    return egl_state->element_array_buffer_cache;
+}
+
+array_buffer_t *
+egl_state_lookup_cached_element_array_buffer (egl_state_t *egl_state,
+                                              GLuint buffer_id)
+{
+    return (array_buffer_t *) hash_lookup (egl_state_get_element_array_buffer_cache (egl_state), buffer_id);
+}
+
+static array_buffer_t *
+_create_array_buffer (GLuint id)
+{
+    array_buffer_t *buffer = (array_buffer_t *) malloc (sizeof (array_buffer_t));
+    buffer->id = id;
+    buffer->size = 0;
+    buffer->data = NULL;
+    return buffer; 
+}
+
+array_buffer_t *
+egl_state_create_cached_element_array_buffer (egl_state_t *egl_state,
+                                              GLuint buffer_id)
+{
+    array_buffer_t *new_buffer = _create_array_buffer (buffer_id);
+    hash_insert (egl_state_get_element_array_buffer_cache (egl_state),
+                buffer_id, new_buffer);
+    return new_buffer;
+
+}
+
+void
+egl_state_delete_cached_element_array_buffer (egl_state_t *egl_state,
+                                              GLuint buffer_id)
+{
+    if (buffer_id != 0)
+        hash_remove (egl_state_get_element_array_buffer_cache (egl_state), buffer_id);
 }
 
 link_list_t **

@@ -78,6 +78,12 @@ typedef struct _framebuffer
     framebuffer_status_t complete;
 } framebuffer_t;
 
+typedef struct _array_buffer
+{
+    GLuint id;
+    GLsizeiptr size;
+    unsigned char *data;
+} array_buffer_t;
 
 typedef struct egl_state  egl_state_t;
 struct egl_state {
@@ -160,6 +166,7 @@ struct egl_state {
     GLboolean     dither;                       /* intitial GL_TRUE */
     /* used */
     GLint         element_array_buffer_binding; /* initial 0 */
+    array_buffer_t *element_array_buffer_binding_object;
 
     /* used */
     GLint         framebuffer_binding;          /* initial 0 */
@@ -303,6 +310,7 @@ struct egl_state {
     HashTable    *texture_cache;
     HashTable    *framebuffer_cache;
     HashTable    *renderbuffer_cache;
+    HashTable    *element_array_buffer_cache;
 
     name_handler_t *texture_name_handler;  /* shared across shared contexts */
     name_handler_t *framebuffer_name_handler; /* no sharing */
@@ -425,6 +433,17 @@ private void
 egl_state_delete_cached_renderbuffer (egl_state_t *egl_state,
                                       GLuint renderbuffer_id);
 
+private array_buffer_t *
+egl_state_lookup_cached_element_array_buffer (egl_state_t *egl_state,
+                                              GLuint buffer_id);
+
+private array_buffer_t * 
+egl_state_create_cached_element_array_buffer (egl_state_t *egl_state,
+                                              GLuint buffer_id);
+
+private void
+egl_state_delete_cached_element_array_buffer (egl_state_t *egl_state,
+                                              GLuint buffer_id);
 private link_list_t **
 egl_state_get_shader_object_list (egl_state_t *egl_state);
 

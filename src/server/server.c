@@ -72,6 +72,50 @@ static HashTable *name_mapping_texture = NULL;
 static HashTable *name_mapping_framebuffer = NULL;
 
 static void
+server_handle_glbindbuffer (server_t *server, command_t *abstract_command)
+{
+    INSTRUMENT ();
+    command_glbindbuffer_t *command =
+            (command_glbindbuffer_t *)abstract_command;
+    if (command->buffer) {
+        mutex_lock (name_mapping_mutex);
+        GLuint *buffer = hash_lookup (name_mapping_buffer, command->buffer);
+        mutex_unlock (name_mapping_mutex);
+        if (!buffer) {
+        GLuint *data = (GLuint *) malloc (1 * sizeof (GLuint));
+        *data = command->buffer;
+        hash_insert (name_mapping_buffer, *data, data);
+        buffer = data;
+        }
+        command->buffer = *buffer;
+    }
+    server->dispatch.glBindBuffer (server, command->target, command->buffer);
+    command_glbindbuffer_destroy_arguments (command);
+}
+static void
+server_handle_glbindtexture (server_t *server, command_t *abstract_command)
+{
+    INSTRUMENT ();
+    command_glbindtexture_t *command =
+            (command_glbindtexture_t *)abstract_command;
+    if (command->texture) {
+        mutex_lock (name_mapping_mutex);
+        GLuint *texture = hash_lookup (name_mapping_texture, command->texture);
+        mutex_unlock (name_mapping_mutex);
+        if (!texture) {
+        GLuint *data = (GLuint *) malloc (1 * sizeof (GLuint));
+        *data = command->texture;
+        hash_insert (name_mapping_texture, *data, data);
+        texture = data;
+        }
+        command->texture = *texture;
+    }
+    server->dispatch.glBindTexture (server, command->target, command->texture);
+    command_glbindtexture_destroy_arguments (command);
+}
+
+
+static void
 server_handle_glgenbuffers (server_t *server,
                                    command_t *abstract_command)
 {

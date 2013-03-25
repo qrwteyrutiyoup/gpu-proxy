@@ -262,8 +262,9 @@ caching_client_glActiveTexture (void* client,
     if (!state)
         return;
 
-    if (state->active_texture == texture)
+    if (state->active_texture == texture) {
         return;
+    }
     if (texture > GL_TEXTURE31 || texture < GL_TEXTURE0) {
         caching_client_glSetError (client, GL_INVALID_ENUM);
         return;
@@ -292,22 +293,29 @@ caching_client_glBindBuffer (void* client, GLenum target, GLuint buffer)
     if (target == GL_ARRAY_BUFFER) {
         if (state->array_buffer_binding == buffer)
             return;
-        else {
-            CACHING_CLIENT(client)->super_dispatch.glBindBuffer (client, target, buffer);
 
-           /* FIXME: we don't know whether it succeeds or not */
-           state->array_buffer_binding = buffer;
-        }
+        CACHING_CLIENT(client)->super_dispatch.glBindBuffer (client, target, buffer);
+
+       /* FIXME: we don't know whether it succeeds or not */
+       state->array_buffer_binding = buffer;
     }
     else if (target == GL_ELEMENT_ARRAY_BUFFER) {
         if (state->element_array_buffer_binding == buffer)
             return;
         else {
+            array_buffer_t *buf_obj = NULL;
+            if (buffer) {
+
+                buf_obj = egl_state_lookup_cached_element_array_buffer (state, buffer);
+                if (!buf_obj)
+                    buf_obj = egl_state_create_cached_element_array_buffer (state, buffer);
+            }
             CACHING_CLIENT(client)->super_dispatch.glBindBuffer (client, target, buffer);
             //state->need_get_error = true;
 
            /* FIXME: we don't know whether it succeeds or not */
            state->element_array_buffer_binding = buffer;
+           state->element_array_buffer_binding_object = buf_obj;
         }
     }
     else {
@@ -542,6 +550,113 @@ caching_client_glBlendFuncSeparate (void* client, GLenum srcRGB, GLenum dstRGB,
 
     CACHING_CLIENT(client)->super_dispatch.glBlendFuncSeparate (client, srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
+
+static void
+caching_client_glBufferData (void *client, GLenum target, GLsizeiptr size,
+                             const GLvoid *data, GLenum usage)
+{
+    INSTRUMENT();
+
+    egl_state_t *state = client_get_current_state (CLIENT (client));
+    if (!state)
+        return;
+
+    array_buffer_t *buf_obj = NULL;
+
+    if (target != GL_ARRAY_BUFFER &&
+        target != GL_ELEMENT_ARRAY_BUFFER) {
+        caching_client_glSetError (client, GL_INVALID_ENUM);
+        return;
+    }
+
+    if (usage != GL_STREAM_DRAW &&
+        usage != GL_STATIC_DRAW &&
+        usage != GL_DYNAMIC_DRAW) {
+        caching_client_glSetError (client, GL_INVALID_ENUM);
+        return;
+    }
+
+    if (size < 0) {
+        caching_client_glSetError (client, GL_INVALID_VALUE);
+        return;
+    }
+
+    if ((target == GL_ARRAY_BUFFER && state->array_buffer_binding == 0) ||
+        (target == GL_ELEMENT_ARRAY_BUFFER && state->element_array_buffer_binding == 0)) {
+        caching_client_glSetError (client, GL_INVALID_OPERATION);
+        return;
+    }
+
+    if (target == GL_ELEMENT_ARRAY_BUFFER) {
+        buf_obj = state->element_array_buffer_binding_object;
+
+        if (buf_obj) {
+            if (buf_obj->size != size) {
+                if (buf_obj->data) {
+                    free (buf_obj->data);
+                    buf_obj->data = NULL;
+                    buf_obj->size = 0;
+                }
+                if (size > 0) {
+                    buf_obj->data = (unsigned char *)malloc (sizeof (unsigned char) * size);
+                    buf_obj->size = size;
+                }
+            }
+
+            if (size > 0) {
+                memcpy (buf_obj->data, data, size);
+            }
+        }
+    }
+    
+    CACHING_CLIENT(client)->super_dispatch.glBufferData (client, target,
+                                                         size, data, usage);
+}
+         
+static void
+caching_client_glBufferSubData (void *client, GLenum target, 
+                                GLintptr offset,
+                                GLsizeiptr size,
+                                const GLvoid *data)
+{
+    INSTRUMENT();
+
+    egl_state_t *state = client_get_current_state (CLIENT (client));
+    if (!state)
+        return;
+
+    array_buffer_t *buf_obj = NULL;
+
+    if (target != GL_ARRAY_BUFFER &&
+        target != GL_ELEMENT_ARRAY_BUFFER) {
+        caching_client_glSetError (client, GL_INVALID_ENUM);
+        return;
+    }
+    
+    if ((target == GL_ARRAY_BUFFER && state->array_buffer_binding == 0) ||
+        (target == GL_ELEMENT_ARRAY_BUFFER && state->element_array_buffer_binding == 0)) {
+        caching_client_glSetError (client, GL_INVALID_OPERATION);
+        return;
+    }
+
+    if (target == GL_ELEMENT_ARRAY_BUFFER)
+        buf_obj = state->element_array_buffer_binding_object;
+
+    if (buf_obj) {
+        if (offset < 0 || size < 0 || 
+            offset + size < buf_obj->size) {
+            caching_client_glSetError (client, GL_INVALID_VALUE);
+            return;
+        }
+        memcpy (buf_obj->data + offset, data, size);
+    }
+    
+    CACHING_CLIENT(client)->super_dispatch.glBufferSubData (client, target,
+                                                            offset, size,
+                                                            data);
+}
+  
+
 
 static GLenum
 caching_client_glCheckFramebufferStatus (void* client, GLenum target)
@@ -1230,10 +1345,17 @@ caching_client_glDeleteBuffers (void* client, GLsizei n, const GLuint *buffers)
 
     /* check array_buffer_binding and element_array_buffer_binding */
     for (i = 0; i < n; i++) {
-        if (buffers[i] == state->array_buffer_binding)
+        if (buffers[i] == state->array_buffer_binding) {
             state->array_buffer_binding = 0;
-        else if (buffers[i] == state->element_array_buffer_binding)
+        }
+        else if (buffers[i] == state->element_array_buffer_binding) {
             state->element_array_buffer_binding = 0;
+            state->element_array_buffer_binding_object = NULL;
+            egl_state_delete_cached_element_array_buffer (state, buffers[i]);
+        }
+        else {
+            egl_state_delete_cached_element_array_buffer (state, buffers[i]);
+        }
     }
 
     /* update client state */
@@ -1781,7 +1903,8 @@ caching_client_setup_vertex_attrib_pointer_if_necessary (client_t *client,
                                                          link_list_t **allocated_data_arrays,
                                                          command_t **command,
                                                          size_t *array_size,
-                                                         size_t index_array_size)
+                                                         size_t index_array_size,
+                                                         bool is_draw_elements)
 {
     int i = 0;
 
@@ -1793,7 +1916,7 @@ caching_client_setup_vertex_attrib_pointer_if_necessary (client_t *client,
     vertex_attrib_list_t *attrib_list = &state->vertex_attribs;
     vertex_attrib_t *attribs = attrib_list->attribs;
 
-    size_t draw_command_size = index_array_size ?
+    size_t draw_command_size = is_draw_elements ?
         command_get_size (COMMAND_GLDRAWELEMENTS) :
         command_get_size (COMMAND_GLDRAWARRAYS);
     size_t commands_size =
@@ -1922,7 +2045,7 @@ caching_client_glDrawArrays (void* client,
                                                                  &arrays_to_free,
                                                                  &command,
                                                                  &array_size,
-                                                                 0);
+                                                                 0, 0);
     }
 
     if (!command)
@@ -2044,7 +2167,7 @@ _get_elements_count (GLenum type, const GLvoid *indices, GLsizei count)
     else {
         short_indices = (unsigned short *)indices;
         for (i = 0; i < (size_t) count; i++) {
-            if ((size_t)short_indices[i] > elements_count)
+            if ((size_t)short_indices[i] > elements_count) 
                 elements_count = (size_t)short_indices[i];
         }
     }
@@ -2109,7 +2232,7 @@ caching_client_glDrawElements (void* client,
     }
 
     if (state->framebuffer_binding) {
-        framebuffer_t *framebuffer = egl_state_lookup_cached_framebuffer (state, state->framebuffer_binding);
+        framebuffer = egl_state_lookup_cached_framebuffer (state, state->framebuffer_binding);
         if (framebuffer && framebuffer->id && framebuffer->complete == FRAMEBUFFER_INCOMPLETE) {
             caching_client_clear_attribute_list_data (CLIENT(client));
             caching_client_glSetError (client, GL_INVALID_FRAMEBUFFER_OPERATION);
@@ -2118,7 +2241,7 @@ caching_client_glDrawElements (void* client,
     }
 
     /* If we aren't actually passing any indices then do not execute anything. */
-    bool copy_indices = !state->vertex_array_binding && !state->element_array_buffer_binding;
+    bool copy_indices = !state->element_array_buffer_binding;
     size_t index_array_size = calculate_index_array_size (type, count);
     if ((! state->element_array_buffer_binding && ! indices) || (copy_indices && ! index_array_size)) {
         caching_client_clear_attribute_list_data (CLIENT(client));
@@ -2130,32 +2253,41 @@ caching_client_glDrawElements (void* client,
     char* indices_to_pass = (char*) indices;
     command_gldrawelements_t *command = NULL;
     size_t array_size = 0;
+    size_t elements_count = 0;
 
-    /* FIXME:  We do not handle where indices is in element_array_buffer
-       while vertex attribs are not in array_buffer, because in
-       this case, we could not compute the number of vertex attrib
-       elements */
-    if (copy_indices) {
-        size_t elements_count = _get_elements_count (type, indices, count);
-        caching_client_setup_vertex_attrib_pointer_if_necessary (
+    if (!copy_indices) {
+        vertex_attrib_list_t *attrib_list = &state->vertex_attribs;
+        if (attrib_list->last_pointer)
+            elements_count = _get_elements_count (type, (char *)state->element_array_buffer_binding_object->data, count);
+        else
+            elements_count = 0;
+    }
+    else
+        elements_count = _get_elements_count (type, indices, count);
+
+    caching_client_setup_vertex_attrib_pointer_if_necessary (
             CLIENT (client),
             elements_count, &arrays_to_free,
             (command_t **)&command,
             &array_size,
-            index_array_size);
-
-        if (command) {
-            ((command_t *)command)->type = COMMAND_GLDRAWELEMENTS;
-            ((command_t *)command)->size = command_get_size (COMMAND_GLDRAWELEMENTS) + array_size + index_array_size;
-            ((command_t *)command)->token = 0;
-            indices_to_pass = ((char *) command) + command_get_size (COMMAND_GLDRAWELEMENTS) + array_size;
-        } else {
-            indices_to_pass = malloc (index_array_size);
-            link_list_prepend (&arrays_to_free, indices_to_pass, free);
-        }
-        memcpy (indices_to_pass, indices, index_array_size);
+            index_array_size, 1);
+    
+    if (command) {
+        ((command_t *)command)->type = COMMAND_GLDRAWELEMENTS;
+        ((command_t *)command)->size = command_get_size (COMMAND_GLDRAWELEMENTS) + array_size + index_array_size;
+        ((command_t *)command)->token = 0;
     }
 
+    if (copy_indices && command)
+        indices_to_pass = ((char *) command) + command_get_size (COMMAND_GLDRAWELEMENTS) + array_size;
+    else if (copy_indices) {
+        indices_to_pass = malloc (index_array_size);
+        link_list_prepend (&arrays_to_free, indices_to_pass, free);
+    }
+
+    if (copy_indices)
+        memcpy (indices_to_pass, indices, index_array_size);
+    
     if (! command)
         command = (command_gldrawelements_t *) client_get_space_for_command (COMMAND_GLDRAWELEMENTS);
 
@@ -3584,7 +3716,7 @@ caching_client_glTexImage2D (void* client, GLenum target, GLint level,
 
     CACHING_CLIENT(client)->super_dispatch.glTexImage2D (client, target, level, internalformat,
                                                          width, height, border, format, type, pixels);
-    
+
     /* update framebuffer in cache */
     if (texture && texture->framebuffer_id) {
         framebuffer_t *framebuffer = egl_state_lookup_cached_framebuffer (state, texture->framebuffer_id);
@@ -3691,7 +3823,6 @@ _synthesize_uniform_error(void *client,
         caching_client_glSetError (client, GL_INVALID_OPERATION);
         return 0;
     }
-
     return location_properties;
 }
 

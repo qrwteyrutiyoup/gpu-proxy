@@ -608,7 +608,7 @@ caching_client_glBufferData (void *client, GLenum target, GLsizeiptr size,
             }
         }
     }
-    
+
     CACHING_CLIENT(client)->super_dispatch.glBufferData (client, target,
                                                          size, data, usage);
 }
@@ -4323,7 +4323,7 @@ caching_client_glGetProgramiv (void *client, GLuint program, GLenum pname, GLint
         new_program->is_linked = (*params == GL_TRUE) ? true : false;
 }
 
-static void
+static bool
 caching_client_set_current_vertex_attrib (void* client, GLuint index, const float *curr_attrib, int num_attribs)
 {
     vertex_attrib_list_t *attrib_list;
@@ -4333,10 +4333,10 @@ caching_client_set_current_vertex_attrib (void* client, GLuint index, const floa
     
     egl_state_t *state = client_get_current_state (CLIENT (client));
     if (! state)
-        return;
-
+        return false;
+    
     if (caching_client_does_index_overflow (client, index))
-        return;
+        return false;
 
     attrib_list = &state->vertex_attribs;
     attribs = attrib_list->attribs;
@@ -4350,7 +4350,7 @@ caching_client_set_current_vertex_attrib (void* client, GLuint index, const floa
 
     if (found_index != -1) {
 	memcpy (attribs[found_index].current_attrib, curr_attrib, num_attribs * sizeof (GLfloat));
-        return;
+        return true;
     }
 
     /* we have not found index */
@@ -4371,6 +4371,8 @@ caching_client_set_current_vertex_attrib (void* client, GLuint index, const floa
         attrib_list->attribs = new_attribs;
         attrib_list->count ++;
     }
+
+    return true;
 }
 
 
@@ -4382,7 +4384,8 @@ caching_client_glVertexAttrib1f (void* client, GLuint index, GLfloat v0)
     if (! state)
         return;
 
-    caching_client_set_current_vertex_attrib (client, index, (const GLfloat *)&v0, 1);
+    if (caching_client_set_current_vertex_attrib (client, index, (const GLfloat *)&v0, 1))
+        CACHING_CLIENT(client)->super_dispatch.glVertexAttrib1f (client, index, v0);
 }
 
 static void
@@ -4394,7 +4397,8 @@ caching_client_glVertexAttrib2f (void* client, GLuint index, GLfloat v0, GLfloat
     if (! state)
         return;
 
-    caching_client_set_current_vertex_attrib (client, index, (const GLfloat *)&v, 2);
+    if (caching_client_set_current_vertex_attrib (client, index, (const GLfloat *)&v, 2))
+        CACHING_CLIENT(client)->super_dispatch.glVertexAttrib2f (client, index, v0, v1);
 }
 
 static void
@@ -4407,7 +4411,8 @@ caching_client_glVertexAttrib3f (void* client, GLuint index, GLfloat v0,
     if (! state)
         return;
 
-    caching_client_set_current_vertex_attrib (client, index, (const GLfloat *)&v, 3);
+    if (caching_client_set_current_vertex_attrib (client, index, (const GLfloat *)&v, 3))
+        CACHING_CLIENT(client)->super_dispatch.glVertexAttrib3f (client, index, v0, v1, v2);
 }
 
 static void
@@ -4420,21 +4425,24 @@ caching_client_glVertexAttrib4f (void* client, GLuint index, GLfloat v0, GLfloat
     if (! state)
         return;
 
-    caching_client_set_current_vertex_attrib (client, index, (const GLfloat *)&v, 4);
+    if (caching_client_set_current_vertex_attrib (client, index, (const GLfloat *)&v, 4))
+        CACHING_CLIENT(client)->super_dispatch.glVertexAttrib4f (client, index, v0, v1, v2, v3);
 }
 
 static void
 caching_client_glVertexAttrib1fv (void* client, GLuint index, const GLfloat *v)
 {
     INSTRUMENT();
-    caching_client_set_current_vertex_attrib (client, index, v, 1);
+    if (caching_client_set_current_vertex_attrib (client, index, v, 1))
+        CACHING_CLIENT(client)->super_dispatch.glVertexAttrib1fv (client, index, v);
 }
 
 static void
 caching_client_glVertexAttrib2fv (void* client, GLuint index, const GLfloat *v)
 {
     INSTRUMENT();
-    caching_client_set_current_vertex_attrib (client, index, v, 2);
+    if (caching_client_set_current_vertex_attrib (client, index, v, 2))
+        CACHING_CLIENT(client)->super_dispatch.glVertexAttrib2fv (client, index, v);
 
 }
 
@@ -4442,14 +4450,16 @@ static void
 caching_client_glVertexAttrib3fv (void* client, GLuint index, const GLfloat *v)
 {
     INSTRUMENT();
-    caching_client_set_current_vertex_attrib (client, index, v, 3);
+    if (caching_client_set_current_vertex_attrib (client, index, v, 3))
+        CACHING_CLIENT(client)->super_dispatch.glVertexAttrib3fv (client, index, v);
 }
 
 static void
 caching_client_glVertexAttrib4fv (void* client, GLuint index, const GLfloat *v)
 {
     INSTRUMENT();
-    caching_client_set_current_vertex_attrib (client, index, v, 4);
+    if (caching_client_set_current_vertex_attrib (client, index, v, 4))
+        CACHING_CLIENT(client)->super_dispatch.glVertexAttrib4fv (client, index, v);
 }
 
 static void

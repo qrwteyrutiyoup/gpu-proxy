@@ -1425,11 +1425,23 @@ caching_client_glDeleteBuffers (void* client, GLsizei n, const GLuint *buffers)
         return;
 
     for (i = 0; i < n; i++) {
-        if (attribs[0].array_buffer_binding == buffers[i]) {
-            for (j = 0; j < count; j++) {
+        for (j = 0; j < count; j++) {
+            if (attribs[j].array_buffer_binding == buffers[i]) {
                 attribs[j].array_buffer_binding = 0;
+                if (attribs[i].array_enabled == GL_TRUE) {
+                    attribs[j].array_enabled = GL_FALSE;
+                }
             }
-            break;
+        }
+    }
+
+    attrib_list->last_index_pointer = 0;
+    attrib_list->last_index_pointer = 0;
+    attrib_list->enabled_count = 0;
+    for (i = 0; i < attrib_list->count; i++) {
+        if (attribs[i].array_enabled && !attribs[i].array_buffer_binding) {
+            attrib_list->enabled_count++;
+            _set_vertex_pointers (attrib_list, &attribs[i]);
         }
     }
 }

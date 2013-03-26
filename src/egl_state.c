@@ -47,8 +47,14 @@ egl_state_init (egl_state_t *state,
     state->vertex_attribs.count = 0;
     state->vertex_attribs.enabled_count = 0;
 
-    for (i = 0; i < NUM_EMBEDDED; i++)
+    memset (state->vertex_attribs.embedded_attribs, 0, sizeof (vertex_attrib_t) * NUM_EMBEDDED);
+    for (i = 0; i < NUM_EMBEDDED; i++) {
         state->vertex_attribs.embedded_attribs[i].index = -1;
+        state->vertex_attribs.embedded_attribs[i].type = GL_FLOAT;
+        state->vertex_attribs.embedded_attribs[i].array_enabled = GL_FALSE;
+        state->vertex_attribs.embedded_attribs[i].size = 4;
+        state->vertex_attribs.embedded_attribs[i].current_attrib[3] = 1;
+    }
 
     state->vertex_attribs.attribs = state->vertex_attribs.embedded_attribs;
     

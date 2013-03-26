@@ -1024,11 +1024,11 @@ caching_client_glDeleteProgram (void *client,
         GLuint *shader_id = (GLuint *)current->data;
         shader_object_t *cached_shader = egl_state_lookup_cached_shader_object (state, *shader_id);
         
-        link_list_delete_element (&cached_program->attached_shaders, current);
         if (cached_shader && cached_shader->mark_for_deletion) {
             name_handler_delete_names (egl_state_get_shader_objects_name_handler (state), 1, shader_id);
             egl_state_destroy_cached_shader_object (state, cached_shader);
         }
+        link_list_delete_element (&cached_program->attached_shaders, current);
         current = current->next;
     }
 
@@ -1129,8 +1129,6 @@ caching_client_glDeleteShader (void *client,
     egl_state_destroy_cached_shader_object (state, cached_shader);
     mutex_unlock (cached_shared_states_mutex);
 }
-
-
 
 static void
 caching_client_glShaderSource (void *client, GLuint shader, GLsizei count,

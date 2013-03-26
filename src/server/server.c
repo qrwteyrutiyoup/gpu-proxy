@@ -388,6 +388,48 @@ server_handle_gldeleteshader (server_t *server, command_t *abstract_command)
     command_gldeleteshader_destroy_arguments (command);
 }
 
+static void
+server_handle_glgetprogrambinaryoes (
+    server_t *server, command_t *abstract_command)
+{
+    INSTRUMENT ();
+    command_glgetprogrambinaryoes_t *command =
+            (command_glgetprogrambinaryoes_t *)abstract_command;
+    
+    mutex_lock (name_mapping_mutex);
+    GLuint *program = hash_take (name_mapping_shader_object, command->program);
+    
+    if (program) {
+        GLuint program_value = *program;
+        mutex_unlock (name_mapping_mutex);
+        server->dispatch.glGetProgramBinaryOES (server, program_value, command->bufSize, command->length, command->binaryFormat, command->binary);
+    } else
+        mutex_unlock (name_mapping_mutex);
+
+}
+
+static void
+server_handle_glprogrambinaryoes (
+    server_t *server, command_t *abstract_command)
+{
+    INSTRUMENT ();
+    command_glprogrambinaryoes_t *command =
+            (command_glprogrambinaryoes_t *)abstract_command;
+    
+    mutex_lock (name_mapping_mutex);
+    GLuint *program = hash_take (name_mapping_shader_object, command->program);
+    
+    if (program) {
+        GLuint program_value = *program;
+        mutex_unlock (name_mapping_mutex);
+        server->dispatch.glProgramBinaryOES (server, program_value, command->binaryFormat, command->binary, command->length);
+    } else
+        mutex_unlock (name_mapping_mutex);
+
+    command_glprogrambinaryoes_destroy_arguments (command);
+}
+
+
 void
 server_init (server_t *server,
              buffer_t *buffer)
@@ -423,6 +465,10 @@ server_init (server_t *server,
         server_handle_glcreateshader;
     server->handler_table[COMMAND_GLDELETESHADER] =
         server_handle_gldeleteshader;
+    server->handler_table[COMMAND_GLGETPROGRAMBINARYOES] =
+        server_handle_glgetprogrambinaryoes;
+    server->handler_table[COMMAND_GLPROGRAMBINARYOES] =
+        server_handle_glprogrambinaryoes;
 
     mutex_lock (name_mapping_mutex);
     if (name_mapping_buffer

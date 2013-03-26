@@ -1300,6 +1300,68 @@ caching_client_glGetAttachedShaders (void    *client,
 }
 
 static void
+caching_client_glGetShaderInfoLog (void *client, GLuint shader,
+                                   GLsizei maxLength,
+                                   GLsizei *length,
+                                   GLchar *infoLog)
+{
+    INSTRUMENT();
+    egl_state_t *state = client_get_current_state (CLIENT(client));
+    if (!state)
+        return;
+
+    shader_object_t *cached_shader = egl_state_lookup_cached_shader_err (client, shader, GL_INVALID_VALUE);
+    if (!cached_shader)
+        return;
+
+    CACHING_CLIENT(client)->super_dispatch.glGetShaderInfoLog (client,
+                                                               cached_shader->id,
+                                                               maxLength,
+                                                               length,
+                                                               infoLog);
+}
+
+static void
+caching_client_glGetShaderSource (void *client, GLuint shader,
+                                  GLsizei bufSize,
+                                  GLsizei *length,
+                                  GLchar *source)
+{
+    INSTRUMENT();
+    egl_state_t *state = client_get_current_state (CLIENT(client));
+    if (!state)
+        return;
+
+    shader_object_t *cached_shader = egl_state_lookup_cached_shader_err (client, shader, GL_INVALID_VALUE);
+    if (!cached_shader)
+        return;
+
+    CACHING_CLIENT(client)->super_dispatch.glGetShaderSource (client,
+                                                              cached_shader->id,
+                                                              bufSize,
+                                                              length,
+                                                              source);
+}
+
+static void
+caching_client_glGetShaderiv (void *client, GLuint shader, GLenum pname,
+                              GLint *params)
+{
+    INSTRUMENT();
+    egl_state_t *state = client_get_current_state (CLIENT(client));
+    if (!state)
+        return;
+
+    shader_object_t *cached_shader = egl_state_lookup_cached_shader_err (client, shader, GL_INVALID_VALUE);
+    if (!cached_shader)
+        return;
+
+    CACHING_CLIENT(client)->super_dispatch.glGetShaderiv (client,
+                                                          cached_shader->id,
+                                                          pname, params);
+}
+
+static void
 caching_client_glCullFace (void* client, GLenum mode)
 {
     INSTRUMENT();
@@ -1725,7 +1787,14 @@ caching_client_glSetVertexAttribArray (void* client,
 
     /* update client state */
     if (found_index != -1) {
-        if (! bound_buffer) {
+        if (bound_buffer) {
+            attribs[found_index].array_buffer_binding = bound_buffer;
+            if (enable) 
+                attrib_list->enabled_count++;
+            else
+                attrib_list->enabled_count--;
+        }
+        else {
             if (enable) {
                 attrib_list->enabled_count++;
                 _set_vertex_pointers (attrib_list, &attribs[found_index]);
@@ -1759,6 +1828,13 @@ caching_client_glSetVertexAttribArray (void* client,
         attribs[i].data = NULL;
         attribs[i].array_buffer_binding = bound_buffer;
         attrib_list->count ++;
+    
+        if (! bound_buffer) {
+            if (enable) {
+                attrib_list->enabled_count++;
+                _set_vertex_pointers (attrib_list, &attribs[i]);
+            }
+        }
     }
     else {
         vertex_attrib_t *new_attribs =
@@ -1778,6 +1854,13 @@ caching_client_glSetVertexAttribArray (void* client,
         new_attribs[count].data = NULL;
         new_attribs[count].array_buffer_binding = bound_buffer;
         attrib_list->attribs = new_attribs;
+
+        if (! bound_buffer) {
+            if (enable) {
+                attrib_list->enabled_count++;
+                _set_vertex_pointers (attrib_list, &new_attribs[count]);
+            }
+        }
         attrib_list->count ++;
     }
 }
@@ -1804,6 +1887,7 @@ caching_client_glDisableVertexAttribArray (void* client, GLuint index)
     egl_state_t *state = client_get_current_state (CLIENT (client));
     if (! state)
         return;
+
     caching_client_glSetVertexAttribArray (client, index, state, GL_FALSE);
 }
 
@@ -1814,6 +1898,7 @@ caching_client_glEnableVertexAttribArray (void* client, GLuint index)
     egl_state_t *state = client_get_current_state (CLIENT (client));
     if (! state)
         return;
+
     caching_client_glSetVertexAttribArray (client, index, state, GL_TRUE);
 }
 
@@ -4317,10 +4402,28 @@ caching_client_glGetProgramiv (void *client, GLuint program, GLenum pname, GLint
         return;
     }
 
-    CACHING_CLIENT(client)->super_dispatch.glGetProgramiv (client, program, pname, params);
+    CACHING_CLIENT(client)->super_dispatch.glGetProgramiv (client, new_program->base.id, pname, params);
 
     if (pname == GL_LINK_STATUS)
         new_program->is_linked = (*params == GL_TRUE) ? true : false;
+}
+
+static void
+caching_client_glGetProgramInfoLog (void *client, GLuint program,
+                                    GLsizei bufSize, GLsizei *length,
+                                    GLchar *source)
+{
+    egl_state_t *state = client_get_current_state (CLIENT (client));
+    if (! state)
+        return;
+
+    program_t *new_program = egl_state_lookup_cached_program_err (client, program, GL_INVALID_VALUE);
+    if (!new_program)
+        return;
+
+    CACHING_CLIENT(client)->super_dispatch.glGetProgramInfoLog (client, 
+                         new_program->base.id, bufSize, length, source);
+
 }
 
 static bool
@@ -4590,6 +4693,13 @@ caching_client_glVertexAttribPointer (void* client, GLuint index, GLint size,
 
         attrib_list->attribs = new_attribs;
         attrib_list->count ++;
+    }
+    attrib_list->enabled_count = 0;
+    for (i = 0; i < attrib_list->count; i++) {
+        if (attribs[i].array_enabled && !attribs[i].array_buffer_binding) {
+            attrib_list->enabled_count++;
+            _set_vertex_pointers (attrib_list, &attribs[i]);
+        }
     }
 }
 
@@ -6201,6 +6311,52 @@ caching_client_glGetBooleanv (void* client, GLenum pname, GLboolean *params)
         CACHING_CLIENT(client)->super_dispatch.glGetBooleanv (client, pname, params);
         break;
     }
+}
+
+static void
+caching_client_glGetProgramBinaryOES (void* client,
+    GLuint program,
+    GLsizei bufSize,
+    GLsizei* length,
+    GLenum* binaryFormat,
+    GLvoid* binary)
+{
+    egl_state_t *state = client_get_current_state (CLIENT (client));
+    if (!state)
+        return;
+
+    INSTRUMENT();
+    
+    program_t *new_program = egl_state_lookup_cached_program_err (client, program, GL_INVALID_VALUE);
+    if (!new_program)
+        return;
+
+    CACHING_CLIENT(client)->super_dispatch.glGetProgramBinaryOES (client,
+                                         new_program->base.id,
+                                         bufSize, length, binaryFormat,
+                                         binary);
+}
+
+static void
+caching_client_glProgramBinaryOES (void* client,
+    GLuint program,
+    GLenum binaryFormat,
+    const GLvoid* binary,
+    GLint length)
+{
+    egl_state_t *state = client_get_current_state (CLIENT (client));
+    if (!state)
+        return;
+    
+    INSTRUMENT();
+
+    program_t *new_program = egl_state_lookup_cached_program_err (client, program, GL_INVALID_VALUE);
+    if (!new_program)
+        return;
+
+    CACHING_CLIENT(client)->super_dispatch.glProgramBinaryOES (client,
+                                         new_program->base.id,
+                                         binaryFormat, binary, length);
 }
 
 static void

@@ -722,6 +722,7 @@ egl_state_create_cached_shader (egl_state_t *egl_state,
     shader_object_t *shader_object = (shader_object_t *)malloc (sizeof (shader_object_t));
     shader_object->id = shader_id;
     shader_object->type = SHADER_OBJECT_SHADER;
+    shader_object->mark_for_deletion = false;
     link_list_append (program_list, shader_object, free);
 }
 

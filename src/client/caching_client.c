@@ -988,6 +988,39 @@ egl_state_lookup_cached_shader_err (void *client,
     return cached_shader;
 }
 
+static GLboolean
+caching_client_glIsProgram (void *client, GLuint program)
+{
+    egl_state_t *state = client_get_current_state (CLIENT (client));
+    if (!state)
+        return false;
+
+    program_t *cached_program = (program_t*) egl_state_lookup_cached_shader_object (state, program);
+    if (!cached_program)
+        return false;
+
+    if (cached_program->base.type != SHADER_OBJECT_PROGRAM)
+        return false;
+
+    return true;
+}
+
+static GLboolean
+caching_client_glIsShader (void *client, GLuint shader)
+{
+    egl_state_t *state = client_get_current_state (CLIENT (client));
+    if (!state)
+        return false;
+
+    shader_object_t *cached_shader = (shader_object_t*) egl_state_lookup_cached_shader_object (state, shader);
+    if (!cached_shader)
+        return false;
+
+    if (cached_shader->type == SHADER_OBJECT_PROGRAM)
+        return false;
+
+    return true;
+}
 
 static void
 caching_client_glDeleteProgram (void *client,

@@ -4324,13 +4324,13 @@ caching_client_glGetProgramiv (void *client, GLuint program, GLenum pname, GLint
 }
 
 static void
-caching_client_set_current_vertex_attrib (void* client, GLuint index, void *curr_attrib)
+caching_client_set_current_vertex_attrib (void* client, GLuint index, const float *curr_attrib, int num_attribs)
 {
-    GLfloat *current_attrib = curr_attrib;
     vertex_attrib_list_t *attrib_list;
     vertex_attrib_t *attribs;
     int i, found_index = -1;
     int count;
+    
     egl_state_t *state = client_get_current_state (CLIENT (client));
     if (! state)
         return;
@@ -4349,13 +4349,14 @@ caching_client_set_current_vertex_attrib (void* client, GLuint index, void *curr
     }
 
     if (found_index != -1) {
-	memcpy (attribs[found_index].current_attrib, current_attrib, 4 * sizeof (GLfloat));
+	memcpy (attribs[found_index].current_attrib, curr_attrib, num_attribs * sizeof (GLfloat));
         return;
     }
 
     /* we have not found index */
     if (i < NUM_EMBEDDED) {
-	memcpy (attribs[i].current_attrib, current_attrib, 4 * sizeof (GLfloat));
+	memcpy (attribs[i].current_attrib, curr_attrib, num_attribs * sizeof (GLfloat));
+        attribs[i].index = index;
         attrib_list->count ++;
     } else {
         vertex_attrib_t *new_attribs = (vertex_attrib_t *)malloc (sizeof (vertex_attrib_t) * (count + 1));
@@ -4364,7 +4365,8 @@ caching_client_set_current_vertex_attrib (void* client, GLuint index, void *curr
         if (attribs != attrib_list->embedded_attribs)
             free (attribs);
 
-	memcpy (attribs[i].current_attrib, current_attrib, 4 * sizeof (GLfloat));
+	memcpy (attribs[i].current_attrib, curr_attrib, num_attribs * sizeof (GLfloat));
+        attribs[i].index = index;
 
         attrib_list->attribs = new_attribs;
         attrib_list->count ++;
@@ -4377,23 +4379,22 @@ caching_client_glVertexAttrib1f (void* client, GLuint index, GLfloat v0)
 {
     INSTRUMENT();
     egl_state_t *state = client_get_current_state (CLIENT (client));
-    GLfloat v[4] = {v0, 0, 0, 0};
     if (! state)
         return;
 
-    caching_client_set_current_vertex_attrib (client, index, &v);
+    caching_client_set_current_vertex_attrib (client, index, (const GLfloat *)&v0, 1);
 }
 
 static void
 caching_client_glVertexAttrib2f (void* client, GLuint index, GLfloat v0, GLfloat v1)
 {
     INSTRUMENT();
+    GLfloat v[2] = {v0, v1};
     egl_state_t *state = client_get_current_state (CLIENT (client));
-    GLfloat v[4] = {v0, v1, 0, 0};
     if (! state)
         return;
 
-    caching_client_set_current_vertex_attrib (client, index, &v);
+    caching_client_set_current_vertex_attrib (client, index, (const GLfloat *)&v, 2);
 }
 
 static void
@@ -4402,11 +4403,11 @@ caching_client_glVertexAttrib3f (void* client, GLuint index, GLfloat v0,
 {
     INSTRUMENT();
     egl_state_t *state = client_get_current_state (CLIENT (client));
-    GLfloat v[4] = {v0, v1, v2, 0};
+    GLfloat v[3] = {v0, v1, v2};
     if (! state)
         return;
 
-    caching_client_set_current_vertex_attrib (client, index, &v);
+    caching_client_set_current_vertex_attrib (client, index, (const GLfloat *)&v, 3);
 }
 
 static void
@@ -4419,21 +4420,21 @@ caching_client_glVertexAttrib4f (void* client, GLuint index, GLfloat v0, GLfloat
     if (! state)
         return;
 
-    caching_client_set_current_vertex_attrib (client, index, &v);
+    caching_client_set_current_vertex_attrib (client, index, (const GLfloat *)&v, 4);
 }
 
 static void
 caching_client_glVertexAttrib1fv (void* client, GLuint index, const GLfloat *v)
 {
     INSTRUMENT();
-    caching_client_glVertexAttrib1f(client, index, v[0]);
+    caching_client_set_current_vertex_attrib (client, index, v, 1);
 }
 
 static void
 caching_client_glVertexAttrib2fv (void* client, GLuint index, const GLfloat *v)
 {
     INSTRUMENT();
-    caching_client_glVertexAttrib2f(client, index, v[0], v[1]);
+    caching_client_set_current_vertex_attrib (client, index, v, 2);
 
 }
 
@@ -4441,14 +4442,14 @@ static void
 caching_client_glVertexAttrib3fv (void* client, GLuint index, const GLfloat *v)
 {
     INSTRUMENT();
-    caching_client_glVertexAttrib3f(client, index, v[0], v[1], v[2]);
+    caching_client_set_current_vertex_attrib (client, index, v, 3);
 }
 
 static void
 caching_client_glVertexAttrib4fv (void* client, GLuint index, const GLfloat *v)
 {
     INSTRUMENT();
-    caching_client_glVertexAttrib4f(client, index, v[0], v[1], v[2], v[3]);
+    caching_client_set_current_vertex_attrib (client, index, v, 4);
 }
 
 static void

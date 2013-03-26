@@ -15,7 +15,7 @@
 /* these are client state */
 typedef struct vertex_attrib
 {
-    GLuint        index;
+    GLint        index;
     GLint         array_buffer_binding;   /* initial is 0 */
     GLboolean     array_enabled;          /* initial GL_FALSE */
     GLint         size;                   /* initial 4 */

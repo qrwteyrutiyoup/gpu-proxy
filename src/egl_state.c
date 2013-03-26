@@ -21,6 +21,8 @@ egl_state_init (egl_state_t *state,
                 EGLDisplay display,
                 EGLContext context)
 {
+    int i;
+
     state->context = context;
     state->display = display;
     state->drawable = EGL_NO_SURFACE;
@@ -44,7 +46,12 @@ egl_state_init (egl_state_t *state,
 
     state->vertex_attribs.count = 0;
     state->vertex_attribs.enabled_count = 0;
+
+    for (i = 0; i < NUM_EMBEDDED; i++)
+        state->vertex_attribs.embedded_attribs[i].index = -1;
+
     state->vertex_attribs.attribs = state->vertex_attribs.embedded_attribs;
+    
     state->vertex_attribs.first_index_pointer = 0;
     state->vertex_attribs.last_index_pointer = 0;
 
@@ -78,7 +85,6 @@ egl_state_init (egl_state_t *state,
 
     state->blend = GL_FALSE;
 
-    int i;
     for (i = 0; i < 4; i++) {
         state->blend_color[i] = GL_ZERO;
         state->blend_dst[i] = GL_ZERO;

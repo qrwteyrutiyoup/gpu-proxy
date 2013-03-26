@@ -4349,6 +4349,8 @@ caching_client_set_current_vertex_attrib (void* client, GLuint index, const floa
     }
 
     if (found_index != -1) {
+        if (memcmp (&attribs[found_index].current_attrib, curr_attrib, num_attribs * sizeof (GLfloat)) == 0)
+           return false;
 	memcpy (attribs[found_index].current_attrib, curr_attrib, num_attribs * sizeof (GLfloat));
         return true;
     }

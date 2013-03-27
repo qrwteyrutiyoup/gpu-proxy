@@ -130,8 +130,8 @@ struct egl_state {
     /* used */
     GLfloat       blend_color[4];               /* initial 0, 0, 0, 0 */
     /*used all here */
-    GLfloat       blend_dst[4];                 /* RGBA, initial GL_ZERO */
-    GLfloat       blend_src[4];                 /* RGBA, initial GL_ONE */
+    GLfloat       blend_dst[2];                 /* RGBA, initial GL_ZERO */
+    GLfloat       blend_src[2];                 /* RGBA, initial GL_ONE */
     /* used */
     GLint         blend_equation[2];            /* 1 rgb, 2 alpha, initial
                                                  * GL_FUNC_ADD

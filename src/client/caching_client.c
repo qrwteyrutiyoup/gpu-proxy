@@ -294,10 +294,31 @@ caching_client_glBindBuffer (void* client, GLenum target, GLuint buffer)
         if (state->array_buffer_binding == buffer)
             return;
 
-        CACHING_CLIENT(client)->super_dispatch.glBindBuffer (client, target, buffer);
+         CACHING_CLIENT(client)->super_dispatch.glBindBuffer (client, target, buffer);
 
-       /* FIXME: we don't know whether it succeeds or not */
-       state->array_buffer_binding = buffer;
+        /* FIXME: we don't know whether it succeeds or not */
+        state->array_buffer_binding = buffer;
+
+        /* update vertex cache */
+        vertex_attrib_list_t *attrib_list = &state->vertex_attribs;
+        vertex_attrib_t *attribs = attrib_list->attribs;
+        int count = attrib_list->count;
+        int i;
+        if (buffer) {
+            for (i = 0; i < count; i++) {
+                if (attribs[i].array_buffer_binding) {
+                    attribs[i].array_buffer_binding = 0;
+                    attribs[i].array_enabled = GL_FALSE;
+                    attribs[i].type = GL_FLOAT;
+                    attribs[i].size = 0;
+                    attribs[i].pointer = NULL;
+                    attribs[i].data = NULL;
+                    attribs[i].stride = 0;
+                    attribs[i].array_normalized = false;
+                    memset (attribs[i].current_attrib, 0, sizeof(GLfloat) * 4);
+                }
+            }
+        }
     }
     else if (target == GL_ELEMENT_ARRAY_BUFFER) {
         if (state->element_array_buffer_binding == buffer)
@@ -546,7 +567,7 @@ caching_client_glBlendFuncSeparate (void* client, GLenum srcRGB, GLenum dstRGB,
     state->blend_src[0] = srcRGB;
     state->blend_src[1] = srcAlpha;
     state->blend_dst[0] = dstRGB;
-    state->blend_dst[0] = dstAlpha;
+    state->blend_dst[1] = dstAlpha;
 
     CACHING_CLIENT(client)->super_dispatch.glBlendFuncSeparate (client, srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
@@ -1457,22 +1478,18 @@ caching_client_glDeleteBuffers (void* client, GLsizei n, const GLuint *buffers)
 
     for (i = 0; i < n; i++) {
         for (j = 0; j < count; j++) {
-            if (attribs[j].array_buffer_binding == buffers[i]) {
+            if (attribs[j].array_buffer_binding == buffers[i] &&
+                buffers[0]) {
                 attribs[j].array_buffer_binding = 0;
-                if (attribs[i].array_enabled == GL_TRUE) {
-                    attribs[j].array_enabled = GL_FALSE;
-                }
+                attribs[j].array_enabled = GL_FALSE;
+                attribs[j].type = GL_FLOAT;
+                attribs[j].size = 0;
+                attribs[j].pointer = NULL;
+                attribs[j].data = NULL;
+                attribs[j].stride = 0;
+                attribs[j].array_normalized = false;
+                memset (attribs[j].current_attrib, 0, sizeof(GLfloat) * 4);
             }
-        }
-    }
-
-    attrib_list->last_index_pointer = 0;
-    attrib_list->last_index_pointer = 0;
-    attrib_list->enabled_count = 0;
-    for (i = 0; i < attrib_list->count; i++) {
-        if (attribs[i].array_enabled && !attribs[i].array_buffer_binding) {
-            attrib_list->enabled_count++;
-            _set_vertex_pointers (attrib_list, &attribs[i]);
         }
     }
 }
@@ -1790,7 +1807,7 @@ caching_client_glSetVertexAttribArray (void* client,
     int count = attrib_list->count;
     int i, found_index = -1;
 
-    GLint bound_buffer = 0;
+    GLint bound_buffer = state->array_buffer_binding;
 
     /* if vertex_array_binding, we don't do on client */
     if ((state->vertex_array_binding)) {
@@ -1805,7 +1822,8 @@ caching_client_glSetVertexAttribArray (void* client,
 
     /* look into client state */
     for (i = 0; i < count; i++) {
-        if (attribs[i].index == index) {
+        if (attribs[i].index == index && 
+            attribs[i].array_buffer_binding == bound_buffer) {
             if (attribs[i].array_enabled == enable)
                 return;
             else {
@@ -1826,7 +1844,6 @@ caching_client_glSetVertexAttribArray (void* client,
        CACHING_CLIENT(client)->super_dispatch.glEnableVertexAttribArray (client, index);
     }
 
-    bound_buffer = state->array_buffer_binding;
 
     /* update client state */
     if (found_index != -1) {

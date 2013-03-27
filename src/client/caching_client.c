@@ -5657,49 +5657,17 @@ caching_client_eglMakeCurrent (void* client,
     if (switching_to_none && ! current_state)
         return EGL_TRUE;
 
-    /* Everything matches, so this is a no-op. */
-    egl_state_t *matching_state = NULL;
-    bool find_draw, find_read;
-
-    bool display_and_context_match = current_state &&
-                                     current_state->display == display &&
-                                     current_state->context == ctx;
-    if (display_and_context_match) {
-        if (current_state->drawable == draw &&
-            current_state->readable == read) {
-            return EGL_TRUE;
-        }
-
-        mutex_lock (cached_gl_states_mutex);
- 
-        link_list_t **surfaces = cached_gl_surfaces (display);
-
-        matching_state = current_state;
-        find_draw = cached_gl_surface_match (surfaces, draw);
-        if (! find_draw)
-            matching_state = NULL;
-
-        find_read = cached_gl_surface_match (surfaces, read);
-        if (! find_read)
-            matching_state = NULL;
-
-        mutex_unlock (cached_gl_states_mutex);
+    if (current_state                     &&
+        current_state->display == display &&
+        current_state->context == ctx     &&
+        current_state->drawable == draw   &&
+        current_state->readable == read) {
+        return EGL_TRUE;
     }
 
-    /* We have found previously used draw and read surface.  Because
-     * the display and context are matching, it means we are not
-     * releasing the context in the thread, we can do async
-     */
-    if (display_and_context_match && matching_state) {
-        command_t *command = client_get_space_for_command (COMMAND_EGLMAKECURRENT);
-        command_eglmakecurrent_init (command, display, draw, read, ctx);
-        client_run_command_async (command);
-    } else {
-        /* Otherwise we must do this synchronously. */
-        if (CACHING_CLIENT(client)->super_dispatch.eglMakeCurrent (client, display,
+    if (CACHING_CLIENT(client)->super_dispatch.eglMakeCurrent (client, display,
                                                                    draw, read, ctx) == EGL_FALSE)
             return EGL_FALSE; /* Don't do anything else if we fail. */
-    }
 
     _caching_client_make_current (client, display, draw, read, ctx);
     return EGL_TRUE;

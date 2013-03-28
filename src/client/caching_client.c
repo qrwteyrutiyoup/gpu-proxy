@@ -315,7 +315,10 @@ caching_client_glBindBuffer (void* client, GLenum target, GLuint buffer)
                     attribs[i].data = NULL;
                     attribs[i].stride = 0;
                     attribs[i].array_normalized = false;
-                    memset (attribs[i].current_attrib, 0, sizeof(GLfloat) * 4);
+                    attribs[i].current_attrib[0] = 0;
+                    attribs[i].current_attrib[1] = 0;
+                    attribs[i].current_attrib[2] = 0;
+                    attribs[i].current_attrib[3] = 1;
                 }
             }
         }
@@ -1490,7 +1493,10 @@ caching_client_glDeleteBuffers (void* client, GLsizei n, const GLuint *buffers)
                 attribs[j].data = NULL;
                 attribs[j].stride = 0;
                 attribs[j].array_normalized = false;
-                memset (attribs[j].current_attrib, 0, sizeof(GLfloat) * 4);
+                attribs[j].current_attrib[0] = 0;
+                attribs[j].current_attrib[1] = 0;
+                attribs[j].current_attrib[2] = 0;
+                attribs[j].current_attrib[3] = 1;
             }
         }
     }

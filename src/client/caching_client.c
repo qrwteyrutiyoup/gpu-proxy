@@ -625,7 +625,8 @@ caching_client_glBufferData (void *client, GLenum target, GLsizeiptr size,
             }
 
             if (size > 0) {
-                memcpy (buf_obj->data, data, size);
+                if (data)
+                    memcpy (buf_obj->data, data, size);
             }
         }
     }
@@ -665,7 +666,7 @@ caching_client_glBufferSubData (void *client, GLenum target,
 
     if (buf_obj) {
         if (offset < 0 || size < 0 || 
-            offset + size < buf_obj->size) {
+            offset + size > buf_obj->size) {
             caching_client_glSetError (client, GL_INVALID_VALUE);
             return;
         }
@@ -2831,6 +2832,8 @@ caching_client_glGetError (void* client)
     }
 
     error = CACHING_CLIENT(client)->super_dispatch.glGetError (client);
+    if (error != GL_NO_ERROR)
+        printf ("error = %x\n", error);
 
     caching_client_reset_set_needs_get_error (CLIENT (client));
     state->error = GL_NO_ERROR;

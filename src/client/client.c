@@ -511,10 +511,10 @@ client_send_log (void)
     mutex_unlock (pilot_command_mutex);
 }
 
-static link_list_t **
+static link_list_t *
 clients_list ()
 {
-    static link_list_t *clients = NULL;
+    static link_list_t clients = {NULL, NULL};
     return &clients;
 }
 
@@ -522,25 +522,21 @@ void
 clients_list_add_client (client_t *client)
 {
     mutex_lock (clients_list_mutex);
-    link_list_t **clients = clients_list ();
-    link_list_append (clients, client, NULL);
+    link_list_append (clients_list (), client, NULL);
     mutex_unlock (clients_list_mutex);
 }
 
 void clients_list_remove_client (client_t *client)
 {
     mutex_lock (clients_list_mutex);
-
-    link_list_t **clients = clients_list ();
-    link_list_delete_first_entry_matching_data (clients, client);
+    link_list_delete_first_entry_matching_data (clients_list (), client);
     mutex_unlock (clients_list_mutex);
 }
 
 void clients_list_set_needs_timestamp ()
 {
     mutex_lock (clients_list_mutex);
-    link_list_t **clients = clients_list();
-    link_list_t *head = *clients;
+    list_node_t *head = clients_list()->head;
 
     while (head) {
         client_t *client = (client_t *) head->data;
@@ -549,6 +545,6 @@ void clients_list_set_needs_timestamp ()
     }
 
     mutex_unlock (clients_list_mutex);
-}  
+}
 
 #include "client_autogen.c"

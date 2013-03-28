@@ -14,7 +14,7 @@
 
 typedef struct name_handler {
     unsigned int last_name;
-    link_list_t *reusable_names;
+    link_list_t reusable_names;
 } name_handler_t;
 
 

@@ -10,17 +10,17 @@
 /* get cached server side server_display_t list.  It is static such
  * that all servers share it
  */
-static link_list_t **
+static link_list_t *
 _call_order_list ()
 {
-    static link_list_t *call_list = NULL;
+    static link_list_t call_list = {NULL, NULL};
     return &call_list;
 }
 
-link_list_t **
+link_list_t *
 _server_displays ()
 {
-    static link_list_t *dpys = NULL;
+    static link_list_t dpys = {NULL, NULL};
     return &dpys;
 }
 
@@ -42,8 +42,7 @@ _destroy_display (void *abstract_display)
 Display *
 _server_get_display (EGLDisplay egl_display)
 {
-    link_list_t **dpys = _server_displays ();
-    link_list_t *head = *dpys;
+    list_node_t *head = _server_displays ()->head;
 
     while (head) {
         server_display_list_t *server_dpy = (server_display_list_t *)head->data;
@@ -77,9 +76,9 @@ void
 _server_display_add (Display *server_display, Display *client_display,
                      EGLDisplay egl_display)
 {
-    link_list_t **dpys = _server_displays ();
     server_display_list_t *server_dpy;
-    link_list_t *head = *dpys;
+    link_list_t *dpys = _server_displays ();
+    list_node_t *head = dpys->head;
 
     while (head) {
         server_dpy = (server_display_list_t *)head->data;
@@ -104,7 +103,7 @@ _server_display_add (Display *server_display, Display *client_display,
 void
 _server_display_remove (EGLDisplay egl_display)
 {
-    link_list_t **displays = _server_displays ();
+    link_list_t *displays = _server_displays ();
     server_display_list_t *display = _server_display_find (egl_display);
 
     if (display) {
@@ -120,9 +119,8 @@ _server_display_remove (EGLDisplay egl_display)
 void
 _server_display_reference (EGLDisplay egl_display)
 {
-    link_list_t **dpys = _server_displays ();
     server_display_list_t *server_dpy;
-    link_list_t *head = *dpys;
+    list_node_t *head = _server_displays ()->head;
 
     while (head) {
         server_dpy = (server_display_list_t *)head->data;
@@ -140,7 +138,7 @@ _server_display_reference (EGLDisplay egl_display)
 void
 _server_destroy_mark_for_deletion (server_display_list_t *display)
 {
-    link_list_t **displays = _server_displays ();
+    link_list_t *displays = _server_displays ();
 
     if (! display)
         return;
@@ -156,8 +154,7 @@ _server_destroy_mark_for_deletion (server_display_list_t *display)
 server_display_list_t *
 _server_display_find (EGLDisplay egl_display)
 {
-    link_list_t **dpys = _server_displays ();
-    link_list_t *head = *dpys;
+    list_node_t *head = _server_displays ()->head;
 
     while (head) {
         server_display_list_t *dpy = (server_display_list_t *) head->data;
@@ -175,7 +172,7 @@ _server_display_find (EGLDisplay egl_display)
 void
 _call_order_list_append (thread_t server)
 {
-    link_list_t **list = _call_order_list ();
+    link_list_t *list = _call_order_list ();
 
     server_log_t *log = (server_log_t *) malloc (sizeof (server_log_t));
     log->server = server;
@@ -185,20 +182,19 @@ _call_order_list_append (thread_t server)
 void
 _call_order_list_remove ()
 {
-    link_list_t **list = _call_order_list ();
+    link_list_t *list = _call_order_list ();
 
-    if (*list != NULL) {
-        link_list_delete_element (list, *list);
-    }
+    if (list->head)
+        link_list_delete_element (list, list->head);
 }
 
 bool
 _call_order_list_head_is_server (thread_t server)
 {
-    link_list_t **list = _call_order_list ();
+    list_node_t *head = _call_order_list ()->head;
 
-    if (*list) {
-        server_log_t *log = (server_log_t *)(*list)->data;
+    if (head) {
+        server_log_t *log = (server_log_t *)(head->data);
         if (log->server == server)
             return true;
     }

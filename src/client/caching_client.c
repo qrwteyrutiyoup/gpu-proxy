@@ -104,9 +104,8 @@ static egl_state_t *
 find_state_with_display_and_context (EGLDisplay display,
                                      EGLContext context)
 {
-    link_list_t **states = cached_gl_states ();
+    list_node_t *current = cached_gl_states ()->head;
 
-    link_list_t *current = *states;
     while (current) {
         egl_state_t *state = (egl_state_t *)current->data;
         if (state->context == context && state->display == display) {
@@ -196,19 +195,14 @@ _caching_client_destroy_surface (client_t *client,
                                  EGLSurface surface)
 {
     egl_state_t *state;
-    link_list_t **states = cached_gl_states ();
-    link_list_t *list = *states;
-    link_list_t *current;
+    list_node_t *node = cached_gl_states ()->head;
+    list_node_t *current;
 
     mutex_lock (cached_gl_states_mutex);
-    if (! *states) {
-        mutex_unlock (cached_gl_states_mutex);
-        return;
-    }
 
-    while (list != NULL) {
-        current = list;
-        list = list->next;
+    while (node != NULL) {
+        current = node;
+        node = node->next;
         state = (egl_state_t *)current->data;
 
         if (state->display == display) {
@@ -1006,7 +1000,7 @@ caching_client_glGetAttachedShaders (void    *client,
         return;
     }
 
-    link_list_t *current = cached_program->attached_shaders;
+    list_node_t *current = cached_program->attached_shaders.head;
     GLsizei attached_shaders_size = 0;
     while (current) {
         if (attached_shaders_size > maxCount)
@@ -1609,7 +1603,7 @@ caching_client_vertex_attribs_array_size (client_t *client,
 static void
 caching_client_setup_vertex_attrib_pointer_if_necessary (client_t *client,
                                                          size_t count,
-                                                         link_list_t **allocated_data_arrays,
+                                                         link_list_t *allocated_data_arrays,
                                                          command_t **command,
                                                          size_t *array_size,
                                                          size_t index_array_size)
@@ -1752,7 +1746,7 @@ caching_client_glDrawArrays (void* client,
         }
     }
 
-    link_list_t *arrays_to_free = NULL;
+    link_list_t arrays_to_free = {NULL, NULL};
     command_t *command = NULL;
     size_t array_size = 0;
     if (! state->vertex_array_binding) {
@@ -1974,7 +1968,7 @@ caching_client_glDrawElements (void* client,
         goto finish;
     }
 
-    link_list_t *arrays_to_free = NULL;
+    link_list_t arrays_to_free = {NULL, NULL};
 
     char* indices_to_pass = (char*) indices;
     command_gldrawelements_t *command = NULL;
@@ -4846,8 +4840,7 @@ caching_client_eglGetDisplay (void *client,
     if (result != EGL_NO_DISPLAY && cached_gl_display_find (result) == NULL) {
         mutex_lock (cached_gl_display_list_mutex);
         display_ctxs_surfaces_t *dpy = cached_gl_display_new (native, result);
-        link_list_t **dpys = cached_gl_displays ();
-        link_list_append (dpys, (void *)dpy, destroy_dpy);
+        link_list_append (cached_gl_displays (), (void *)dpy, destroy_dpy);
         mutex_unlock (cached_gl_display_list_mutex);
     }
     return result;
@@ -4862,8 +4855,7 @@ caching_client_eglQueryString (void *client, EGLDisplay display,  EGLint name)
         if (strstr (result, "EGL_KHR_surfaceless_context") ||
             strstr (result, "EGL_KHR_surfaceless_opengl")) {
             mutex_lock (cached_gl_display_list_mutex);
-            link_list_t **dpys = cached_gl_displays ();
-            link_list_t *dpy = *dpys;
+            list_node_t *dpy = cached_gl_displays ()->head;
             while (dpy) {
                 display_ctxs_surfaces_t *d = (display_ctxs_surfaces_t *)dpy->data;
                 if (d->display == display) {
@@ -4894,18 +4886,18 @@ caching_client_eglTerminate (void* client,
     clients_list_set_needs_timestamp ();
     mutex_lock (cached_gl_states_mutex);
 
-    link_list_t **states = cached_gl_states ();
-    if (! *states) {
+    list_node_t *states = cached_gl_states ()->head;
+    if (!states) {
         mutex_unlock (cached_gl_states_mutex);
         return EGL_TRUE;
     }
 
-    link_list_t *list = *states;
-    while (list != NULL) {
+    list_node_t *node = states;
+    while (node != NULL) {
 
         /* We might delete current in the following code. */
-        link_list_t *current = list;
-        list = current->next;
+        list_node_t *current = node;
+        node = current->next;
 
         egl_state_t *egl_state = (egl_state_t *) current->data;
         if (egl_state->display == display && ! egl_state->active)
@@ -5218,8 +5210,8 @@ caching_client_eglCreatePixmapSurface (void *client,
     INSTRUMENT();
 
     mutex_lock (cached_gl_display_list_mutex);
-    link_list_t **dpys = cached_gl_displays ();
-    link_list_t *dpy = *dpys;
+    list_node_t *dpy = cached_gl_displays ()->head;
+
     while (dpy) {
         display_ctxs_surfaces_t *cached_display = (display_ctxs_surfaces_t *)dpy->data;
         if (cached_display->display == display) {
@@ -5259,8 +5251,7 @@ caching_client_eglCreateWindowSurface (void *client,
     INSTRUMENT();
 
     mutex_lock (cached_gl_display_list_mutex);
-    link_list_t **dpys = cached_gl_displays ();
-    link_list_t *dpy = *dpys;
+    list_node_t *dpy = cached_gl_displays ()->head;
     while (dpy) {
         display_ctxs_surfaces_t *cached_display = (display_ctxs_surfaces_t *)dpy->data;
         if (cached_display->display == display) {

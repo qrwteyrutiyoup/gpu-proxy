@@ -44,7 +44,7 @@ typedef struct _server_log {
 /*********************************************************
  * functions for server_display_list
  *********************************************************/
-private link_list_t **
+private link_list_t *
 _server_displays ();
 
 /* obtain server side of X server display connection */

@@ -4,7 +4,7 @@ typedef struct _command_gldrawelements {
     GLsizei count;
     GLenum type;
     void* indices;
-    link_list_t *arrays_to_free;
+    link_list_t arrays_to_free;
 } command_gldrawelements_t;
 
 typedef struct _command_gldrawarrays {
@@ -12,7 +12,7 @@ typedef struct _command_gldrawarrays {
     GLenum mode;
     GLint first;
     GLsizei count;
-    link_list_t *arrays_to_free;
+    link_list_t arrays_to_free;
 } command_gldrawarrays_t;
 
 typedef struct _command_log {

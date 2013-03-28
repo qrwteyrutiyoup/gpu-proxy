@@ -103,7 +103,7 @@ struct egl_state {
 
     GLenum                  error;             /* initial is GL_NO_ERROR */
     bool                    need_get_error;
-    link_list_t           *shader_objects;         /* initial is NULL */
+    link_list_t           shader_objects;         /* initial is NULL */
     vertex_attrib_list_t  vertex_attribs;    /* client states */
     name_handler_t        *shader_objects_name_handler;
 
@@ -316,8 +316,8 @@ typedef struct display_ctxs_surfaces {
     bool native_display_locked;
     EGLDisplay display;
     bool support_surfaceless;
-    link_list_t *surfaces;
-    link_list_t *contexts;
+    link_list_t surfaces;
+    link_list_t contexts;
 } display_ctxs_surfaces_t;
 
 typedef struct egl_surface {
@@ -342,10 +342,10 @@ egl_state_new (EGLDisplay display,
 private void
 egl_state_destroy (void *abstract_state);
 
-private link_list_t **
+private link_list_t *
 cached_gl_states ();
 
-private link_list_t **
+private link_list_t *
 cached_gl_displays ();
 
 private display_ctxs_surfaces_t *
@@ -357,7 +357,7 @@ destroy_dpy (void *abstract_dpy);
 private void
 cached_gl_display_destroy (EGLDisplay display);
 
-private link_list_t **
+private link_list_t *
 cached_gl_surfaces (EGLDisplay display);
 
 private void
@@ -366,10 +366,10 @@ cached_gl_surface_add (EGLDisplay display, EGLConfig config, EGLSurface surface)
 private void
 cached_gl_surface_destroy (EGLDisplay display, EGLSurface surface);
 
-private bool 
-cached_gl_surface_match (link_list_t **surfaces, EGLSurface egl_surface);
+private bool
+cached_gl_surface_match (link_list_t *surfaces, EGLSurface egl_surface);
 
-private link_list_t **
+private link_list_t *
 cached_gl_contexts (EGLDisplay display);
 
 private void

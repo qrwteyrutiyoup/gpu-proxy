@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static link_list_t *null_list = NULL;
+static link_list_t null_list = {NULL, NULL};
 
 void
 egl_state_init (egl_state_t *state,
@@ -59,7 +59,8 @@ egl_state_init (egl_state_t *state,
     state->need_get_error = false;
 
     /* We add a head to the list so we can get a reference. */
-    state->shader_objects = NULL;
+    state->shader_objects.head = NULL;
+    state->shader_objects.tail = NULL;
 
     state->active_texture = GL_TEXTURE0;
     state->array_buffer_binding = 0;
@@ -203,10 +204,10 @@ egl_state_destroy (void *abstract_state)
     free (state);
 }
 
-link_list_t **
+link_list_t *
 cached_gl_displays ()
 {
-    static link_list_t *displays = NULL;
+    static link_list_t displays = {NULL, NULL};
     return &displays;
 }
 
@@ -217,8 +218,10 @@ cached_gl_display_new (NativeDisplayType native_display, EGLDisplay display)
     dpy->display = display;
     dpy->native_display = native_display;
     dpy->native_display_locked = false;
-    dpy->surfaces = NULL;
-    dpy->contexts = NULL;
+    dpy->surfaces.head = NULL;
+    dpy->surfaces.tail = NULL;
+    dpy->contexts.head = NULL;
+    dpy->contexts.tail = NULL;
     dpy->support_surfaceless = false;
     return dpy;
 }
@@ -235,12 +238,12 @@ destroy_dpy (void *abstract_dpy)
 void
 cached_gl_display_destroy (EGLDisplay display)
 {
-    link_list_t **dpys = cached_gl_displays ();
-    link_list_t *dpy = *dpys;
+    link_list_t *dpys = cached_gl_displays ();
+    list_node_t *dpy = dpys->head;
 
     if (! dpy)
         return;
-    
+
     while (dpy) {
         display_ctxs_surfaces_t *dpy_surfaces = (display_ctxs_surfaces_t *)dpy->data;
         if (dpy_surfaces->display == display) {
@@ -252,15 +255,14 @@ cached_gl_display_destroy (EGLDisplay display)
     }
 }
 
-link_list_t **
+link_list_t *
 cached_gl_surfaces (EGLDisplay display)
 {
-    link_list_t **dpys = cached_gl_displays ();
-    if (! *dpys) {
+    list_node_t *dpy = cached_gl_displays ()->head;
+    if (!dpy) {
         return &null_list;
     }
 
-    link_list_t *dpy = *dpys;
     while (dpy) {
         display_ctxs_surfaces_t *dpy_surfaces = (display_ctxs_surfaces_t *)dpy->data;
         if (dpy_surfaces->display == display)
@@ -275,11 +277,10 @@ cached_gl_surfaces (EGLDisplay display)
 void
 cached_gl_surface_add (EGLDisplay display, EGLConfig config, EGLSurface surface)
 {
-    link_list_t **dpys = cached_gl_displays ();
-    if (! *dpys)
+    list_node_t *dpy = cached_gl_displays ()->head;
+    if (!dpy)
         return;
 
-    link_list_t *dpy = *dpys;
     display_ctxs_surfaces_t *matched_dpy = NULL;
     while (dpy) {
         display_ctxs_surfaces_t *dpy_surfaces = (display_ctxs_surfaces_t *)dpy->data;
@@ -301,11 +302,10 @@ cached_gl_surface_add (EGLDisplay display, EGLConfig config, EGLSurface surface)
 
 void cached_gl_surface_destroy (EGLDisplay display, EGLSurface surface)
 {
-    link_list_t **dpys = cached_gl_displays ();
-    if (! *dpys)
+    list_node_t *dpy = cached_gl_displays ()->head;
+    if (!dpy)
         return;
 
-    link_list_t *dpy = *dpys;
     display_ctxs_surfaces_t *matched_dpy = NULL;
     while (dpy) {
         display_ctxs_surfaces_t *dpy_surfaces = (display_ctxs_surfaces_t *)dpy->data;
@@ -322,15 +322,15 @@ void cached_gl_surface_destroy (EGLDisplay display, EGLSurface surface)
 }
 
 bool
-cached_gl_surface_match (link_list_t **surfaces, EGLSurface egl_surface)
+cached_gl_surface_match (link_list_t *surfaces, EGLSurface egl_surface)
 {
     if (egl_surface == EGL_NO_SURFACE)
         return true;
 
-    if (! *surfaces)
+    if (! surfaces->head)
         return false;
 
-    link_list_t *current = *surfaces;
+    list_node_t *current = surfaces->head;
 
     while (current) {
         surface_t *surface = (surface_t *)current->data;
@@ -342,14 +342,13 @@ cached_gl_surface_match (link_list_t **surfaces, EGLSurface egl_surface)
     return false;
 }
 
-link_list_t **
+link_list_t *
 cached_gl_contexts (EGLDisplay display)
 {
-    link_list_t **dpys = cached_gl_displays ();
-    if (! *dpys)
+    list_node_t *dpy = cached_gl_displays ()->head;
+    if (!dpy)
         return &null_list;
 
-    link_list_t *dpy = *dpys;
     while (dpy) {
         display_ctxs_surfaces_t *dpy_surfaces = (display_ctxs_surfaces_t *)dpy->data;
         if (dpy_surfaces->display == display)
@@ -363,11 +362,10 @@ cached_gl_contexts (EGLDisplay display)
 void
 cached_gl_context_add (EGLDisplay display, EGLConfig config, EGLContext context)
 {
-    link_list_t **dpys = cached_gl_displays ();
-    if (! *dpys)
+    list_node_t *dpy = cached_gl_displays ()->head;
+    if (!dpy)
         return;
 
-    link_list_t *dpy = *dpys;
     display_ctxs_surfaces_t *matched_dpy = NULL;
     while (dpy) {
         display_ctxs_surfaces_t *dpy_surfaces = (display_ctxs_surfaces_t *)dpy->data;
@@ -389,11 +387,10 @@ cached_gl_context_add (EGLDisplay display, EGLConfig config, EGLContext context)
 
 void cached_gl_context_destroy (EGLDisplay display, EGLContext context)
 {
-    link_list_t **dpys = cached_gl_displays ();
-    if (! *dpys)
+    list_node_t *dpy = cached_gl_displays ()->head;
+    if (!dpy)
         return;
 
-    link_list_t *dpy = *dpys;
     display_ctxs_surfaces_t *matched_dpy = NULL;
     while (dpy) {
         display_ctxs_surfaces_t *dpy_surfaces = (display_ctxs_surfaces_t *)dpy->data;
@@ -415,8 +412,7 @@ cached_gl_display_find (EGLDisplay display)
     if (display == EGL_NO_DISPLAY)
         return NULL;
 
-    link_list_t **dpys = cached_gl_displays();
-    link_list_t *dpy = *dpys;
+    list_node_t *dpy = cached_gl_displays ()->head;
     while (dpy) {
         display_ctxs_surfaces_t *d = (display_ctxs_surfaces_t *)dpy->data;
         if (d->display == display)
@@ -432,20 +428,20 @@ cached_gl_find_display_context_surface_matching (EGLDisplay display,
                                                  EGLSurface draw,
                                                  EGLSurface read)
 {
-    link_list_t **ctxs = cached_gl_contexts (display);
-    link_list_t **surfaces = cached_gl_surfaces (display);
+    link_list_t *ctxs = cached_gl_contexts (display);
+    link_list_t *surfaces = cached_gl_surfaces (display);
     EGLConfig ctx_config = 0;
     EGLConfig draw_config = 0;
     EGLConfig read_config = 0;
     display_ctxs_surfaces_t *dpy;
 
-    if (! ctxs || !surfaces)
+    if (! ctxs->head || !surfaces->head)
         return false;
 
     if ((dpy = cached_gl_display_find (display)) == NULL)
         return false;
 
-    link_list_t *lt = *ctxs;
+    list_node_t *lt = ctxs->head;
     while (lt) {
         context_t *c = (context_t *) lt->data;
         if (c->context == context) {
@@ -461,7 +457,7 @@ cached_gl_find_display_context_surface_matching (EGLDisplay display,
     if (dpy->support_surfaceless && !read && !draw)
         return true;
 
-    lt = *surfaces;
+    lt = surfaces->head;
     bool find_read = false;
     bool find_draw = false;
     while (lt) {
@@ -486,11 +482,11 @@ cached_gl_find_display_context_surface_matching (EGLDisplay display,
         return true;
     return false;
 }
-          
-link_list_t **
+
+link_list_t *
 cached_gl_states ()
 {
-    static link_list_t *states = NULL;
+    static link_list_t states = {NULL, NULL};
     return &states;
 }
 
@@ -627,7 +623,7 @@ egl_state_delete_cached_renderbuffer (egl_state_t *egl_state,
         hash_remove (egl_state_get_texture_cache (egl_state), renderbuffer_id);
 }
 
-static link_list_t **
+static link_list_t *
 egl_state_get_shader_object_list (egl_state_t *egl_state)
 {
     if (egl_state->share_context)
@@ -639,7 +635,7 @@ void
 egl_state_create_cached_program (egl_state_t *egl_state,
                                  GLuint program_id)
 {
-    link_list_t **program_list = egl_state_get_shader_object_list (egl_state);
+    link_list_t *program_list = egl_state_get_shader_object_list (egl_state);
     link_list_append (program_list, program_new (program_id), program_destroy);
 }
 
@@ -647,7 +643,7 @@ void
 egl_state_create_cached_shader (egl_state_t *egl_state,
                                 GLuint shader_id)
 {
-    link_list_t **program_list = egl_state_get_shader_object_list (egl_state);
+    link_list_t *program_list = egl_state_get_shader_object_list (egl_state);
     shader_object_t *shader_object = (shader_object_t *)malloc (sizeof (shader_object_t));
     shader_object->id = shader_id;
     shader_object->type = SHADER_OBJECT_SHADER;
@@ -658,8 +654,8 @@ shader_object_t *
 egl_state_lookup_cached_shader_object (egl_state_t *egl_state,
                                        GLuint shader_object_id)
 {
-    link_list_t **program_list = egl_state_get_shader_object_list (egl_state);
-    link_list_t *current = *program_list;
+    link_list_t *program_list = egl_state_get_shader_object_list (egl_state);
+    list_node_t *current = program_list->head;
     while (current) {
         shader_object_t *shader_object = (shader_object_t *)current->data;
         if (shader_object->id == shader_object_id)

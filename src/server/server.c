@@ -733,8 +733,7 @@ server_handle_eglgetdisplay (server_t *server, command_t *abstract_command)
     command_eglgetdisplay_t *command =
             (command_eglgetdisplay_t *)abstract_command;
 
-    link_list_t **displays = _server_displays ();
-    link_list_t *head = *displays;
+    list_node_t *head = _server_displays ()->head;
 
     while (head) {
         server_display_list_t *display = (server_display_list_t *)head->data;

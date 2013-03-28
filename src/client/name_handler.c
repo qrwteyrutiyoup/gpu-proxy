@@ -5,7 +5,8 @@ name_handler_t *
 name_handler_create ()
 {
     name_handler_t *name_handler = (name_handler_t *) malloc (sizeof(name_handler_t));
-    name_handler->reusable_names = NULL;
+    name_handler->reusable_names.head = NULL;
+    name_handler->reusable_names.tail = NULL;
     name_handler->last_name = 0;
 
     return name_handler;
@@ -26,9 +27,9 @@ name_handler_alloc_names (name_handler_t *name_handler,
     int i = 0;
     while (i < n) {
         unsigned next_name = 0;
-        if (name_handler->reusable_names != NULL) {
-            next_name = * ((GLuint *) name_handler->reusable_names->data);
-            link_list_delete_element (&name_handler->reusable_names, name_handler->reusable_names);
+        if (name_handler->reusable_names.head != NULL) {
+            next_name = * ((GLuint *) name_handler->reusable_names.head->data);
+            link_list_delete_element (&name_handler->reusable_names, name_handler->reusable_names.head);
         } else {
             next_name = ++name_handler->last_name;
             assert (next_name != UINT_MAX);
@@ -46,7 +47,7 @@ name_handler_alloc_name (name_handler_t *name_handler,
     if (buffer >= name_handler->last_name)
         ++name_handler->last_name;
     else {
-        link_list_t *current = name_handler->reusable_names;
+        list_node_t *current = name_handler->reusable_names.head;
         while (current) {
             if ( *(GLuint*)current->data == buffer) {
                 link_list_delete_element (&name_handler->reusable_names, current);

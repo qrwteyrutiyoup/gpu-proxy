@@ -12,7 +12,8 @@ program_new (GLuint id)
     new_program->uniform_location_cache = id ? new_hash_table(free) : NULL;
     new_program->attrib_location_cache = id ? new_hash_table(free) : NULL;
     new_program->location_cache = id ? new_hash_table(free) : NULL;
-    new_program->attached_shaders = NULL;
+    new_program->attached_shaders.head = NULL;
+    new_program->attached_shaders.tail = NULL;
     return new_program;
 }
 

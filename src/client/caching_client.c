@@ -2832,12 +2832,6 @@ caching_client_glGetError (void* client)
 
     error = CACHING_CLIENT(client)->super_dispatch.glGetError (client);
 
-    GLenum temp_err = error;
-    while (temp_err != GL_NO_ERROR) {
-        state->need_get_error = true;
-        temp_err = CACHING_CLIENT(client)->super_dispatch.glGetError (client);
-    }
-
     caching_client_reset_set_needs_get_error (CLIENT (client));
     state->error = GL_NO_ERROR;
 
@@ -4768,34 +4762,6 @@ caching_client_glVertexAttribPointer (void* client, GLuint index, GLint size,
         }
     }
 }
-
-static void
-caching_client_glReadPixels (void* client,
-                             GLint x, GLint y,
-                             GLsizei width, GLsizei height,
-                             GLenum format, GLenum type, void* pixels)
-{
-    egl_state_t *state = client_get_current_state (CLIENT (client));
-    if (state)
-        state->need_get_error = true;
-
-    INSTRUMENT();
-
-    CACHING_CLIENT(client)->super_dispatch.glReadPixels (client, x, y,
-                                                         width, height,
-                                                         format, type, pixels);
-
-    /* FIXME: glReadPixels may generated GL_OUT_OF_MEMORY */
-    GLenum error = glGetError ();
-    while (error != GL_NO_ERROR) {
-        CACHING_CLIENT(client)->super_dispatch.glReadPixels (client, x, y,
-                                                         width, height,
-                                                         format, type, pixels);
-        state->need_get_error = true;
-        error = glGetError ();
-    }
-}
-
 
 static void
 caching_client_glRenderbufferStorage (void *client, GLenum target,

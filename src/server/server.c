@@ -429,6 +429,34 @@ server_handle_glprogrambinaryoes (
     command_glprogrambinaryoes_destroy_arguments (command);
 }
 
+static void
+server_handle_glreadpixels (server_t *server, command_t *abstract_command)
+{
+    INSTRUMENT ();
+    command_glreadpixels_t *command =
+            (command_glreadpixels_t *)abstract_command;
+    server->dispatch.glReadPixels (server, command->x, command->y, command->width, command->height, command->format, command->type, command->pixels);
+    GLenum error = server->dispatch.glGetError (server);
+    while (error == GL_OUT_OF_MEMORY) {
+        server->dispatch.glReadPixels (server, command->x, command->y,
+                                       command->width, command->height,
+                                       command->format, command->type,
+                                       command->pixels);
+        error = server->dispatch.glGetError (server);
+    }
+}
+
+static void
+server_handle_glgeterror (server_t *server, command_t *abstract_command)
+{
+    INSTRUMENT ();
+    command_glgeterror_t *command =
+            (command_glgeterror_t *)abstract_command;
+    command->result = server->dispatch.glGetError (server);
+    GLenum error = command->result;
+    while (error != GL_NO_ERROR)
+        error = server->dispatch.glGetError (server);
+}
 
 void
 server_init (server_t *server,
@@ -469,6 +497,10 @@ server_init (server_t *server,
         server_handle_glgetprogrambinaryoes;
     server->handler_table[COMMAND_GLPROGRAMBINARYOES] =
         server_handle_glprogrambinaryoes;
+    server->handler_table[COMMAND_GLGETERROR] =
+        server_handle_glgeterror;
+    server->handler_table[COMMAND_GLREADPIXELS] = 
+        server_handle_glreadpixels;
 
     mutex_lock (name_mapping_mutex);
     if (name_mapping_buffer

@@ -1822,9 +1822,9 @@ caching_client_glSetVertexAttribArray (void* client,
 
     /* look into client state */
     for (i = 0; i < count; i++) {
-        if (attribs[i].index == index && 
-            attribs[i].array_buffer_binding == bound_buffer) {
-            if (attribs[i].array_enabled == enable)
+        if (attribs[i].index == index) {
+            if (attribs[i].array_buffer_binding == bound_buffer && 
+                attribs[i].array_enabled == enable)
                 return;
             else {
                 found_index = i;

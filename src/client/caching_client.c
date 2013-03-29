@@ -4521,15 +4521,25 @@ caching_client_set_current_vertex_attrib (void* client, GLuint index, const floa
     }
 
     if (found_index != -1) {
-        if (memcmp (&attribs[found_index].current_attrib, curr_attrib, num_attribs * sizeof (GLfloat)) == 0)
-           return false;
 	memcpy (attribs[found_index].current_attrib, curr_attrib, num_attribs * sizeof (GLfloat));
+
+        if (num_attribs < 4) {
+            memset ((void *)attribs[found_index].current_attrib + sizeof (GLfloat) * num_attribs,
+                    0, sizeof (GLfloat) * (4 - num_attribs));
+            attribs[found_index].current_attrib[3] = 1;
+        }
         return true;
     }
 
     /* we have not found index */
     if (i < NUM_EMBEDDED) {
 	memcpy (attribs[i].current_attrib, curr_attrib, num_attribs * sizeof (GLfloat));
+
+        if (num_attribs < 4) {
+            memset ((void *)attribs[i].current_attrib + sizeof (GLfloat) * num_attribs,
+                    0, sizeof (GLfloat) * (4 - num_attribs));
+            attribs[i].current_attrib[3] = 1;
+        }
         attribs[i].index = index;
         attrib_list->count ++;
     } else {
@@ -4539,8 +4549,14 @@ caching_client_set_current_vertex_attrib (void* client, GLuint index, const floa
         if (attribs != attrib_list->embedded_attribs)
             free (attribs);
 
-	memcpy (attribs[i].current_attrib, curr_attrib, num_attribs * sizeof (GLfloat));
-        attribs[i].index = index;
+	memcpy (new_attribs[i].current_attrib, curr_attrib, num_attribs * sizeof (GLfloat));
+
+        if (num_attribs < 4) {
+            memset ((void *)new_attribs[i].current_attrib + sizeof (GLfloat) * num_attribs,
+                    0, sizeof (GLfloat) * (4 - num_attribs));
+            new_attribs[i].current_attrib[3] = 1;
+        }
+        new_attribs[i].index = index;
 
         attrib_list->attribs = new_attribs;
         attrib_list->count ++;

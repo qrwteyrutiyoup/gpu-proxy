@@ -20,8 +20,16 @@ program_new (GLuint id)
 void
 program_destroy (void *abstract_program)
 {
+    shader_object_t *shader_object = abstract_program;
+
+    if (shader_object->type == SHADER_OBJECT_SHADER) {
+        free (shader_object);
+        return;
+    }
+
     program_t *program = abstract_program;
     delete_hash_table (program->attrib_location_cache);
     delete_hash_table (program->uniform_location_cache);
+    delete_hash_table (program->location_cache);
     link_list_clear (&program->attached_shaders);
 }

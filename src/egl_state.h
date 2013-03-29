@@ -103,7 +103,7 @@ struct egl_state {
 
     GLenum                  error;             /* initial is GL_NO_ERROR */
     bool                    need_get_error;
-    link_list_t           shader_objects;         /* initial is NULL */
+    HashTable               *shader_objects;
     vertex_attrib_list_t  vertex_attribs;    /* client states */
     name_handler_t        *shader_objects_name_handler;
 

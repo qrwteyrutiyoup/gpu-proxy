@@ -58,9 +58,7 @@ egl_state_init (egl_state_t *state,
     state->error = GL_NO_ERROR;
     state->need_get_error = false;
 
-    /* We add a head to the list so we can get a reference. */
-    state->shader_objects.head = NULL;
-    state->shader_objects.tail = NULL;
+    state->shader_objects = new_hash_table(program_destroy);
 
     state->active_texture = GL_TEXTURE0;
     state->array_buffer_binding = 0;
@@ -177,8 +175,6 @@ egl_state_destroy (void *abstract_state)
     if (state->vertex_attribs.attribs != state->vertex_attribs.embedded_attribs)
         free (state->vertex_attribs.attribs);
 
-    link_list_clear (&state->shader_objects);
-
     if (state->vendor_string)
         free (state->vendor_string);
     if (state->renderer_string)
@@ -200,6 +196,8 @@ egl_state_destroy (void *abstract_state)
         name_handler_destroy (state->renderbuffer_name_handler);
     if (state->buffer_name_handler)
         name_handler_destroy (state->buffer_name_handler);
+
+    delete_hash_table (state->shader_objects);
 
     free (state);
 }
@@ -623,53 +621,47 @@ egl_state_delete_cached_renderbuffer (egl_state_t *egl_state,
         hash_remove (egl_state_get_texture_cache (egl_state), renderbuffer_id);
 }
 
-static link_list_t *
-egl_state_get_shader_object_list (egl_state_t *egl_state)
+static HashTable *
+egl_state_get_shader_object_table (egl_state_t *egl_state)
 {
     if (egl_state->share_context)
-        return &egl_state->share_context->shader_objects;
-    return &egl_state->shader_objects;
+        return egl_state->share_context->shader_objects;
+    return egl_state->shader_objects;
 }
 
 void
 egl_state_create_cached_program (egl_state_t *egl_state,
                                  GLuint program_id)
 {
-    link_list_t *program_list = egl_state_get_shader_object_list (egl_state);
-    link_list_append (program_list, program_new (program_id), program_destroy);
+    HashTable *program_table = egl_state_get_shader_object_table (egl_state);
+    hash_insert (program_table, program_id, program_new (program_id));
 }
 
 void
 egl_state_create_cached_shader (egl_state_t *egl_state,
                                 GLuint shader_id)
 {
-    link_list_t *program_list = egl_state_get_shader_object_list (egl_state);
+    HashTable *program_table = egl_state_get_shader_object_table (egl_state);
     shader_object_t *shader_object = (shader_object_t *)malloc (sizeof (shader_object_t));
     shader_object->id = shader_id;
     shader_object->type = SHADER_OBJECT_SHADER;
-    link_list_append (program_list, shader_object, free);
+    hash_insert (program_table, shader_id, shader_object);
 }
 
 shader_object_t *
 egl_state_lookup_cached_shader_object (egl_state_t *egl_state,
                                        GLuint shader_object_id)
 {
-    link_list_t *program_list = egl_state_get_shader_object_list (egl_state);
-    list_node_t *current = program_list->head;
-    while (current) {
-        shader_object_t *shader_object = (shader_object_t *)current->data;
-        if (shader_object->id == shader_object_id)
-            return shader_object;
-        current = current->next;
-    }
-    return NULL;
+    HashTable *program_table = egl_state_get_shader_object_table (egl_state);
+
+    return (shader_object_t *) hash_lookup (program_table, shader_object_id);
 }
 
 void
 egl_state_destroy_cached_shader_object (egl_state_t *egl_state,
                                         shader_object_t *shader_object)
 {
-    link_list_delete_first_entry_matching_data (
-        egl_state_get_shader_object_list (egl_state),
-        shader_object);
+    HashTable *program_table = egl_state_get_shader_object_table (egl_state);
+
+    hash_remove (program_table, shader_object->id);
 }

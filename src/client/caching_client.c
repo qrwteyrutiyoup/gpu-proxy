@@ -5699,6 +5699,10 @@ caching_client_eglMakeCurrent (void* client,
     if (switching_to_none && ! current_state)
         return EGL_TRUE;
 
+    /*  Even we are not switching context, make real call can
+        possibly release memory in driver
+     */
+    /*
     if (current_state                     &&
         current_state->display == display &&
         current_state->context == ctx     &&
@@ -5706,6 +5710,7 @@ caching_client_eglMakeCurrent (void* client,
         current_state->readable == read) {
         return EGL_TRUE;
     }
+    */
 
     if (CACHING_CLIENT(client)->super_dispatch.eglMakeCurrent (client, display,
                                                                    draw, read, ctx) == EGL_FALSE)

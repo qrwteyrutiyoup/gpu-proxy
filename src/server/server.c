@@ -436,6 +436,9 @@ server_handle_glreadpixels (server_t *server, command_t *abstract_command)
     command_glreadpixels_t *command =
             (command_glreadpixels_t *)abstract_command;
     server->dispatch.glReadPixels (server, command->x, command->y, command->width, command->height, command->format, command->type, command->pixels);
+
+    /* FIXME:  Do we need this */
+    /*
     GLenum error = server->dispatch.glGetError (server);
     while (error == GL_OUT_OF_MEMORY) {
         server->dispatch.glReadPixels (server, command->x, command->y,
@@ -444,6 +447,7 @@ server_handle_glreadpixels (server_t *server, command_t *abstract_command)
                                        command->pixels);
         error = server->dispatch.glGetError (server);
     }
+    */
 }
 
 static void

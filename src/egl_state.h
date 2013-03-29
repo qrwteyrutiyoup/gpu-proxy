@@ -313,9 +313,10 @@ struct egl_state {
     HashTable    *element_array_buffer_cache;
 
     name_handler_t *texture_name_handler;  /* shared across shared contexts */
-    name_handler_t *framebuffer_name_handler; /* no sharing */
+    name_handler_t *framebuffer_name_handler; /* no shared */
     name_handler_t *renderbuffer_name_handler; /* shared */
-    name_handler_t *buffer_name_handler; /* no sharing */
+    name_handler_t *array_buffer_name_handler; /* shared */
+//    name_handler_t *element_array_buffer_name_handler; /* not shared */
 
     bool         supports_element_index_uint;     /* GL_OES_element_index_uint */
     bool	 supports_bgra;	                  /* GL_EXT_texture_format_BGRA8888 */
@@ -470,4 +471,7 @@ egl_state_get_texture_name_handler (egl_state_t *egl_state);
 
 private name_handler_t *
 egl_state_get_renderbuffer_name_handler (egl_state_t *egl_state);
+
+private name_handler_t *
+egl_state_get_array_buffer_name_handler (egl_state_t *egl_state);
 #endif /* GPUPROCESS_EGL_STATE_H */

@@ -180,7 +180,8 @@ egl_state_init (egl_state_t *state,
     state->texture_name_handler = name_handler_create ();
     state->framebuffer_name_handler = name_handler_create ();
     state->renderbuffer_name_handler = name_handler_create ();
-    state->buffer_name_handler = name_handler_create ();
+    state->array_buffer_name_handler = name_handler_create ();
+//    state->element_array_buffer_name_handler = name_handler_create ();
 
     state->supports_element_index_uint = false;
     state->supports_bgra = false;
@@ -224,8 +225,8 @@ egl_state_destroy (void *abstract_state)
         name_handler_destroy (state->framebuffer_name_handler);
     if (state->renderbuffer_name_handler)
         name_handler_destroy (state->renderbuffer_name_handler);
-    if (state->buffer_name_handler)
-        name_handler_destroy (state->buffer_name_handler);
+    if (state->array_buffer_name_handler)
+        name_handler_destroy (state->array_buffer_name_handler);
 
     free (state);
 }
@@ -775,4 +776,13 @@ egl_state_get_renderbuffer_name_handler (egl_state_t *egl_state)
         return egl_state->share_context->renderbuffer_name_handler;
 
     return egl_state->renderbuffer_name_handler;
+}
+
+name_handler_t *
+egl_state_get_array_buffer_name_handler (egl_state_t *egl_state)
+{
+    if (egl_state->share_context)
+        return egl_state->share_context->array_buffer_name_handler;
+
+    return egl_state->array_buffer_name_handler;
 }

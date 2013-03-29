@@ -19,26 +19,6 @@ mutex_static_init (cached_gl_states_mutex);
 mutex_static_init (cached_gl_display_list_mutex);
 mutex_static_init (cached_shared_states_mutex);
 
-static texture_t *
-caching_client_get_default_texture ()
-{
-    static texture_t tex;
-    static bool initialized = false;
-
-    if (! initialized) {
-        tex.id = 0;
-        tex.data_type = GL_UNSIGNED_BYTE;
-        tex.internal_format = GL_RGBA;
-        tex.texture_mag_filter = GL_LINEAR;
-        tex.texture_min_filter = GL_NEAREST_MIPMAP_LINEAR;
-        tex.texture_wrap_s = GL_REPEAT;
-        tex.texture_wrap_t = GL_REPEAT;
-        tex.texture_3d_wrap_r = GL_REPEAT;
-        initialized = true;
-    }
-
-    return &tex;
-}
 static void
 caching_client_glSetError (void* client, GLenum error)
 {
@@ -420,18 +400,20 @@ caching_client_glBindTexture (void* client, GLenum target, GLuint texture)
     }
 
     /* look up in cache */
-    if (!texture && !egl_state_lookup_cached_texture (state, texture)) {
-        mutex_lock (cached_shared_states_mutex);
-        name_handler_alloc_name (egl_state_get_texture_name_handler (state), texture);
-        egl_state_create_cached_texture (state, texture);
-        mutex_unlock (cached_shared_states_mutex);
-    }
+    if (texture) {
+        if (!egl_state_lookup_cached_texture (state, texture)) {
+            mutex_lock (cached_shared_states_mutex);
+            name_handler_alloc_name (egl_state_get_texture_name_handler (state), texture);
+            egl_state_create_cached_texture (state, texture);
+            mutex_unlock (cached_shared_states_mutex);
+        }
 
-    texture_t *tex_obj = egl_state_lookup_cached_texture (state, texture);
-    if (!texture) {
-        if (tex_obj->initialized && tex_obj->target != target) {
-            caching_client_glSetError (client, GL_INVALID_OPERATION);
-            return;
+        texture_t *tex_obj = egl_state_lookup_cached_texture (state, texture);
+        if (!texture) {
+            if (tex_obj->initialized && tex_obj->target != target) {
+                caching_client_glSetError (client, GL_INVALID_OPERATION);
+                return;
+            }
         }
 
         if (!tex_obj->initialized) {
@@ -1460,8 +1442,9 @@ caching_client_glDeleteBuffers (void* client, GLsizei n, const GLuint *buffers)
 
     CACHING_CLIENT(client)->super_dispatch.glDeleteBuffers (client, n, buffers);
 
-    name_handler_delete_names (state->buffer_name_handler, n, buffers);
-
+    mutex_lock (cached_shared_states_mutex);
+    name_handler_delete_names (egl_state_get_array_buffer_name_handler (state), n, buffers);
+    mutex_unlock (cached_shared_states_mutex);
     /* check array_buffer_binding and element_array_buffer_binding */
     for (i = 0; i < n; i++) {
         if (buffers[i] == state->array_buffer_binding) {
@@ -2570,7 +2553,10 @@ caching_client_glGenBuffers (void* client, GLsizei n, GLuint *buffers)
         return;
     }
 
-    name_handler_alloc_names (state->buffer_name_handler, n, buffers);
+    mutex_lock (cached_shared_states_mutex);
+    name_handler_alloc_names (egl_state_get_array_buffer_name_handler (state), n, buffers);
+    mutex_unlock (cached_shared_states_mutex);
+
     GLuint *server_buffers = (GLuint *)malloc (n * sizeof (GLuint));
     memcpy (server_buffers, buffers, n * sizeof (GLuint));
 
@@ -3017,21 +3003,26 @@ caching_client_glGetTexParameteriv (void* client, GLenum target, GLenum pname,
     }
 
     texture = caching_client_lookup_cached_texture (state, target);
-    if (! texture)
-        texture = caching_client_get_default_texture ();
+    if (texture) {
+        if (pname == GL_TEXTURE_MAG_FILTER)
+            *params = texture->texture_mag_filter;
+        else if (pname == GL_TEXTURE_MIN_FILTER)
+            *params = texture->texture_min_filter;
+        else if (pname == GL_TEXTURE_WRAP_S)
+            *params = texture->texture_wrap_s;
+        else if (pname == GL_TEXTURE_WRAP_T)
+            *params = texture->texture_wrap_t;
+        else if (pname == GL_TEXTURE_WRAP_R_OES)
+            *params = texture->texture_3d_wrap_r;
+        else if (pname == GL_TEXTURE_MAX_ANISOTROPY_EXT)
+            *params = texture->texture_max_anisotropy;
+        return;
+    }
 
-    if (pname == GL_TEXTURE_MAG_FILTER)
-        *params = texture->texture_mag_filter;
-    else if (pname == GL_TEXTURE_MIN_FILTER)
-        *params = texture->texture_min_filter;
-    else if (pname == GL_TEXTURE_WRAP_S)
-        *params = texture->texture_wrap_s;
-    else if (pname == GL_TEXTURE_WRAP_T)
-        *params = texture->texture_wrap_t;
-    else if (pname == GL_TEXTURE_WRAP_R_OES)
-        *params = texture->texture_3d_wrap_r;
-    else if (pname == GL_TEXTURE_MAX_ANISOTROPY_EXT)
-        *params = texture->texture_max_anisotropy;
+    CACHING_CLIENT(client)->super_dispatch.glGetTexParameteriv (client,
+                                                                target,
+                                                                pname,
+                                                                params);
 }
 
 static void
@@ -3045,7 +3036,6 @@ caching_client_glGetTexParameterfv (void* client, GLenum target, GLenum pname, G
     /* XXX: GL_TEXTURE_MAX_ANISOTROPY_EXT returns a float,
      * we can not use caching_client_glGetTexParameteriv
      */
-
     if (pname == GL_TEXTURE_MAX_ANISOTROPY_EXT) {
         texture_t *texture;
         if (! is_valid_GetTexParamTarget (target)) {
@@ -3059,13 +3049,18 @@ caching_client_glGetTexParameterfv (void* client, GLenum target, GLenum pname, G
         }
 
         texture = caching_client_lookup_cached_texture (state, target);
-        if (! texture)
-            texture = caching_client_get_default_texture ();
+        if (texture) {
+            *params = texture->texture_max_anisotropy;
+        }
+        else
+            CACHING_CLIENT(client)->super_dispatch.glGetTexParameterfv (client,
+                                                                target,
+                                                                pname,
+                                                                params);
 
-        *params = texture->texture_max_anisotropy;
         return;
     }
-
+            
     caching_client_glGetTexParameteriv (client, target, pname, &paramsi);
     *params = paramsi;
 }
@@ -3706,39 +3701,40 @@ caching_client_glTexParameteri (void* client, GLenum target, GLenum pname, GLint
         return;
     }
 
-    if (! texture)
-        texture = caching_client_get_default_texture ();
-
-    if (pname == GL_TEXTURE_MAG_FILTER &&
-        texture->texture_mag_filter != param) {
-        texture->texture_mag_filter = param;
-        needs_call = true;
+    if (texture) {
+        if (pname == GL_TEXTURE_MAG_FILTER &&
+            texture->texture_mag_filter != param) {
+            texture->texture_mag_filter = param;
+            needs_call = true;
+        }
+        else if (pname == GL_TEXTURE_MIN_FILTER &&
+                 texture->texture_min_filter != param) {
+            texture->texture_min_filter = param;
+            needs_call = true;
+        }
+        else if (pname == GL_TEXTURE_WRAP_S &&
+                 texture->texture_wrap_s != param) {
+            texture->texture_wrap_s = param;
+            needs_call = true;
+        }
+        else if (pname == GL_TEXTURE_WRAP_T &&
+                 texture->texture_wrap_t != param) {
+            texture->texture_wrap_t = param;
+            needs_call = true;
+        }
+        else if (pname == GL_TEXTURE_WRAP_R_OES &&
+            texture->texture_3d_wrap_r != param) {
+            texture->texture_3d_wrap_r = param;
+            needs_call = true;
+        }
+        else if (pname == GL_TEXTURE_MAX_ANISOTROPY_EXT &&
+                 texture->texture_max_anisotropy != param) {
+            texture->texture_max_anisotropy = param;
+            needs_call = true;
+        }
     }
-    else if (pname == GL_TEXTURE_MIN_FILTER &&
-             texture->texture_min_filter != param) {
-        texture->texture_min_filter = param;
+    else
         needs_call = true;
-    }
-    else if (pname == GL_TEXTURE_WRAP_S &&
-             texture->texture_wrap_s != param) {
-        texture->texture_wrap_s = param;
-        needs_call = true;
-    }
-    else if (pname == GL_TEXTURE_WRAP_T &&
-             texture->texture_wrap_t != param) {
-        texture->texture_wrap_t = param;
-        needs_call = true;
-    }
-    else if (pname == GL_TEXTURE_WRAP_R_OES &&
-        texture->texture_3d_wrap_r != param) {
-        texture->texture_3d_wrap_r = param;
-        needs_call = true;
-    }
-    else if (pname == GL_TEXTURE_MAX_ANISOTROPY_EXT &&
-             texture->texture_max_anisotropy != param) {
-        texture->texture_max_anisotropy = param;
-        needs_call = true;
-    }
 
     if (needs_call)
         CACHING_CLIENT(client)->super_dispatch.glTexParameteri (client, target, pname, param);
@@ -3778,16 +3774,18 @@ caching_client_glTexParameterf (void* client, GLenum target, GLenum pname, GLflo
         }
 
         texture = caching_client_lookup_cached_texture (state, target);
-        if (! texture)
-            texture = caching_client_get_default_texture ();
+        if (texture) {
+            if (texture->texture_max_anisotropy != param) {
+                texture->texture_max_anisotropy = param;
+                needs_call = true;
+            }
+            else
+                needs_call = true;
 
-        if (texture->texture_max_anisotropy != param) {
-            texture->texture_max_anisotropy = param;
-            needs_call = true;
+            if (needs_call)
+                CACHING_CLIENT(client)->super_dispatch.glTexParameterf (client, target, pname, param);
         }
-
-        if (needs_call)
-            CACHING_CLIENT(client)->super_dispatch.glTexParameterf (client, target, pname, param);
+        return;
     }
 
     caching_client_glTexParameteri (client, target, pname, parami);
@@ -3851,8 +3849,9 @@ caching_client_glTexImage2D (void* client, GLenum target, GLint level,
     else
         tex_id = state->texture_binding[1];
 
+    /* FIXME: Is it right? */
     texture_t *texture = egl_state_lookup_cached_texture (state, tex_id);
-    if (! texture)
+    if (! texture || tex_id == 0)
         caching_client_set_needs_get_error (CLIENT (client));
     else if (texture->target != target && texture->initialized) {
         caching_client_glSetError (client, GL_INVALID_OPERATION);
@@ -3936,7 +3935,9 @@ caching_client_glTexSubImage2D (void* client,
         tex_id = state->texture_binding[1];
 
     texture_t *texture = egl_state_lookup_cached_texture (state, tex_id);
-    if (! texture || texture->target != target) {
+    if (tex_id == 0)
+        caching_client_set_needs_get_error (CLIENT (client));
+    else if (! texture || texture->target != target) {
         caching_client_glSetError (client, GL_INVALID_OPERATION);
         return;
     } else {

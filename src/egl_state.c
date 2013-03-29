@@ -197,6 +197,9 @@ egl_state_destroy (void *abstract_state)
     if (state->buffer_name_handler)
         name_handler_destroy (state->buffer_name_handler);
 
+    delete_hash_table (state->texture_cache);
+    delete_hash_table (state->framebuffer_cache);
+    delete_hash_table (state->renderbuffer_cache);
     delete_hash_table (state->shader_objects);
 
     free (state);

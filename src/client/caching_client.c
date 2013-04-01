@@ -1615,6 +1615,7 @@ caching_client_glDeleteTextures (void* client, GLsizei n, const GLuint *textures
     CACHING_CLIENT(client)->super_dispatch.glDeleteTextures (client, n, textures);
 
     mutex_lock (cached_shared_states_mutex);
+    name_handler_delete_names (egl_state_get_texture_name_handler (state), n, textures);
     for (i = 0; i < n; i++) {
         if (textures[i] == 0)
             continue;
@@ -1626,7 +1627,6 @@ caching_client_glDeleteTextures (void* client, GLsizei n, const GLuint *textures
             framebuffer->attached_image = 0;
         }
 
-        name_handler_delete_names (egl_state_get_texture_name_handler (state), n, textures);
         egl_state_delete_cached_texture (state, textures[i]);
 
         if (state->texture_binding[0] == textures[i])

@@ -3950,7 +3950,7 @@ caching_client_glTexSubImage2D (void* client,
     /* if internal format does not match format, we need to set
        needs_get_error = true
      */
-    if (texture->internal_format != format)
+    if (texture && texture->internal_format != format)
         caching_client_set_needs_get_error (CLIENT (client));
 
     /* FIXME: we need to check level */

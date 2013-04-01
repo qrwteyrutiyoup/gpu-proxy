@@ -1539,6 +1539,7 @@ caching_client_glDeleteFramebuffers (void* client, GLsizei n, const GLuint *fram
                 if (renderbuffer)
                     renderbuffer->framebuffer_id = 0;
             }
+            egl_state_delete_cached_framebuffer (state, framebuffers[i]);
         }
         if (state->framebuffer_binding == framebuffers[i]) {
             state->framebuffer_binding = 0;

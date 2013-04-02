@@ -2604,7 +2604,8 @@ caching_client_glGenRenderbuffers (void* client, GLsizei n, GLuint *renderbuffer
     if (n < 0) {
         caching_client_glSetError (client, GL_INVALID_VALUE);
         return;
-    }
+    } else if (n == 0)
+        return;
 
     mutex_lock (cached_shared_states_mutex);
     name_handler_alloc_names (egl_state_get_renderbuffer_name_handler (state), n, renderbuffers);
@@ -2635,7 +2636,8 @@ caching_client_glGenTextures (void* client, GLsizei n, GLuint *textures)
     if (n < 0) {
         caching_client_glSetError (client, GL_INVALID_VALUE);
         return;
-    }
+    } else if (n == 0)
+        return;
 
     mutex_lock (cached_shared_states_mutex);
     name_handler_alloc_names (egl_state_get_texture_name_handler (state), n, textures);

@@ -497,7 +497,7 @@ client_run_log_command (command_t *command)
     client_run_log_command_async (command);
 
     while (pilot_buffer.last_token < pilot_token) {
-        sem_post (&pilot_client_signal);
+        sem_wait (&pilot_client_signal);
     }
 }
 

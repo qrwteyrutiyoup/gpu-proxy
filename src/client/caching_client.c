@@ -2926,8 +2926,10 @@ caching_client_glGetString (void* client, GLenum name)
 
     result = CACHING_CLIENT(client)->super_dispatch.glGetString (client, name);
 
-    if (result == 0)
+    if (result == 0) {
         caching_client_set_needs_get_error (CLIENT (client));
+        return result;
+    }
 
     length = strlen ((char *)result);
     switch (name) {

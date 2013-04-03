@@ -367,6 +367,13 @@ caching_client_glBindRenderbuffer (void* client, GLenum target, GLuint renderbuf
         return;
     }
 
+    if (! egl_state_lookup_cached_renderbuffer (state, renderbuffer))
+        mutex_lock (cached_shared_states_mutex);
+        name_handler_alloc_name (egl_state_get_renderbuffer_name_handler (state), renderbuffer);
+        egl_state_create_cached_renderbuffer (state, renderbuffer);
+        mutex_unlock (cached_shared_states_mutex);
+    }
+
     CACHING_CLIENT(client)->super_dispatch.glBindRenderbuffer (client, target, renderbuffer);
     /* FIXME: should we save it, it will be invalid if the
      * renderbuffer is invalid

@@ -1632,11 +1632,12 @@ caching_client_glDeleteTextures (void* client, GLsizei n, const GLuint *textures
         if (textures[i] == 0)
             continue;
         tex = egl_state_lookup_cached_texture (state, textures[i]);
-        if (tex) 
+        if (tex) {
             framebuffer = egl_state_lookup_cached_framebuffer (state, tex->framebuffer_id);
-        if (framebuffer && tex->framebuffer_id) {
-            framebuffer->complete = FRAMEBUFFER_COMPLETE_UNKNOWN;
-            framebuffer->attached_image = 0;
+            if (framebuffer && tex->framebuffer_id) {
+                framebuffer->complete = FRAMEBUFFER_COMPLETE_UNKNOWN;
+                framebuffer->attached_image = 0;
+            }
         }
 
         egl_state_delete_cached_texture (state, textures[i]);

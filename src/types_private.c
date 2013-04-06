@@ -5,7 +5,10 @@
 link_list_t *
 link_list_new ()
 {
-    return (link_list_t *) malloc (sizeof (link_list_t));
+    link_list_t *list = (link_list_t *) malloc (sizeof (link_list_t));
+    list->head = NULL;
+    list->tail = NULL;
+    return list;
 }
 
 void
@@ -45,6 +48,7 @@ link_list_prepend (link_list_t *list,
     new_node->data = data;
     new_node->delete_function = delete_function;
     new_node->prev = NULL;
+    new_node->next = NULL;
 
     if (!list->head) {
         list->tail = list->head = new_node;

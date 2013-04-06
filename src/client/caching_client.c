@@ -1583,23 +1583,24 @@ caching_client_glDeleteRenderbuffers (void* client, GLsizei n, const GLuint *ren
             continue;
 
         renderbuffer = egl_state_lookup_cached_renderbuffer (state, renderbuffers[i]);
-        if (renderbuffer) 
+        if (renderbuffer) {
             framebuffer = egl_state_lookup_cached_framebuffer (state, renderbuffer->framebuffer_id);
-        if (framebuffer && renderbuffer->framebuffer_id) {
-            framebuffer->complete = FRAMEBUFFER_COMPLETE_UNKNOWN;
-            if (framebuffer->attached_color_buffer == renderbuffers[i])
-                framebuffer->attached_color_buffer = 0;
-            if (framebuffer->attached_stencil_buffer == renderbuffers[i])
-                framebuffer->attached_stencil_buffer = 0;
-            if (framebuffer->attached_depth_buffer == renderbuffers[i])
-                framebuffer->attached_depth_buffer = 0;
-        }
+            if (framebuffer && renderbuffer->framebuffer_id) {
+                framebuffer->complete = FRAMEBUFFER_COMPLETE_UNKNOWN;
+                if (framebuffer->attached_color_buffer == renderbuffers[i])
+                    framebuffer->attached_color_buffer = 0;
+                if (framebuffer->attached_stencil_buffer == renderbuffers[i])
+                    framebuffer->attached_stencil_buffer = 0;
+                if (framebuffer->attached_depth_buffer == renderbuffers[i])
+                    framebuffer->attached_depth_buffer = 0;
+            }
 
-        if (state->renderbuffer_binding == renderbuffers[i]) {
-            state->renderbuffer_binding = 0;
-        }
+            if (state->renderbuffer_binding == renderbuffers[i]) {
+                state->renderbuffer_binding = 0;
+            }
 
-        egl_state_delete_cached_renderbuffer (state, renderbuffers[i]);
+            egl_state_delete_cached_renderbuffer (state, renderbuffers[i]);
+        }
     }
     mutex_unlock (cached_shared_states_mutex);
 

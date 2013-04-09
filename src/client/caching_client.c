@@ -5281,14 +5281,15 @@ caching_client_eglBindTexImage (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
+    EGLBoolean result = 
+        CACHING_CLIENT(client)->super_dispatch.eglBindTexImage(client,
+                                                               display,
+                                                               surface,
+                                                               buffer);
+    if (result == EGL_TRUE) {
+        /* we save the binding on client */
+    }
 
-    EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglBindTexImage(client,
-                                                                  display,
-                                                                  surface,
-                                                                  buffer);
-    clients_list_set_needs_timestamp ();
     return result;
 }
 
@@ -5298,6 +5299,10 @@ caching_client_eglReleaseTexImage (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
+    /* FIXME: we could make it as async call by saving the binding on
+     * client.  If there exists a binding, we send_log, and send command
+     * as async, and return EGL_TRUE
+     */
     /* send log */
     CLIENT(client)->needs_timestamp = true;
 

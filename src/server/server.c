@@ -934,18 +934,22 @@ static void
 server_handle_eglbindteximage (server_t *server, command_t *abstract_command)
 {
     INSTRUMENT ();
-    
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+
+    if (abstract_command->use_timestamp) {    
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglbindteximage_t *command =
             (command_eglbindteximage_t *)abstract_command;
     command->result = server->dispatch.eglBindTexImage (server, command->dpy, command->surface, command->buffer);
-    
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+
+    if (abstract_command->use_timestamp) {    
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void

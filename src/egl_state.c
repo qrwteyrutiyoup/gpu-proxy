@@ -93,6 +93,9 @@ egl_state_init (egl_state_t *state,
 
     for (i = 0; i < 4; i++) {
         state->blend_color[i] = GL_ZERO;
+    }
+
+    for (i = 0; i < 2; i++) {
         state->blend_dst[i] = GL_ZERO;
         state->blend_src[i] = GL_ONE;
     }

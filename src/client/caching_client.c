@@ -5334,14 +5334,15 @@ caching_client_eglLockSurfaceKHR (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
-
     EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglLockSurfaceKHR(client,
                                                                  display,
                                                                  surface,
                                                                  attrib_list);
-    clients_list_set_needs_timestamp ();
+    /* FIXME: we should save the lock status of the surface, such
+     * that when locking, we can send as async 
+     */
+    if (result == EGL_TRUE) {
+    }
     return result;
 }
 
@@ -5351,6 +5352,7 @@ caching_client_eglUnlockSurfaceKHR (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
+    /* FIXME: We should send this command as async */
     /* send log */
     CLIENT(client)->needs_timestamp = true;
 

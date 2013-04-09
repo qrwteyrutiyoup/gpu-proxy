@@ -5371,16 +5371,17 @@ caching_client_eglCreateImageKHR (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
-
     EGLImageKHR image = CACHING_CLIENT(client)->super_dispatch.eglCreateImageKHR(client,
                                                                  display,
                                                                  context,
                                                                  target,
                                                                  buffer,
                                                                  attrib_list);
-    clients_list_set_needs_timestamp ();
+    if (image) {
+        /* FIXME: We should cache this image such that during 
+         * DestroyImage, we can send command as async 
+         */
+    }
     return image;
 }
 
@@ -5390,6 +5391,7 @@ caching_client_eglDestroyImageKHR (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
+    /* FIXME: We should send this command as async */
     /* send log */
     CLIENT(client)->needs_timestamp = true;
 

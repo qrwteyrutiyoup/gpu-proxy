@@ -5161,15 +5161,11 @@ caching_client_eglCreatePbufferSurface (void *client,
 {
     INSTRUMENT();
 
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
-
     EGLSurface result =
         CACHING_CLIENT(client)->super_dispatch.eglCreatePbufferSurface (client,
                                                             display,
                                                             config,
                                                             attrib_list);
-    clients_list_set_needs_timestamp ();
     if (result) {
         mutex_lock (cached_gl_display_list_mutex);
         cached_gl_surface_add (display, config, result);
@@ -5200,9 +5196,6 @@ caching_client_eglCreatePixmapSurface (void *client,
         dpy = dpy->next;
     }
     mutex_unlock (cached_gl_display_list_mutex);
-
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
 
     EGLSurface result =
         CACHING_CLIENT(client)->super_dispatch.eglCreatePixmapSurface (client,
@@ -5241,16 +5234,12 @@ caching_client_eglCreateWindowSurface (void *client,
     }
     mutex_unlock (cached_gl_display_list_mutex);
 
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
-
     EGLSurface result =
         CACHING_CLIENT(client)->super_dispatch.eglCreateWindowSurface (client,
                                                             display,
                                                             config,
                                                             native_window,
                                                             attrib_list);
-    clients_list_set_needs_timestamp ();
     if (result) {
         mutex_lock (cached_gl_display_list_mutex);
         cached_gl_surface_add (display, config, result);
@@ -5270,9 +5259,6 @@ caching_client_eglCreatePbufferFromClientBuffer (void *client,
 {
     INSTRUMENT();
 
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
-
     EGLSurface result =
         CACHING_CLIENT(client)->super_dispatch.eglCreatePbufferFromClientBuffer (client,
                                                             display,
@@ -5280,7 +5266,6 @@ caching_client_eglCreatePbufferFromClientBuffer (void *client,
                                                             buffer,
                                                             config,
                                                             attrib_list);
-    clients_list_set_needs_timestamp ();
     if (result) {
         mutex_lock (cached_gl_display_list_mutex);
         cached_gl_surface_add (display, config, result);

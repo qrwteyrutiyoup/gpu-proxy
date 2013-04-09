@@ -785,17 +785,21 @@ server_handle_eglinitialize (server_t *server, command_t *abstract_command)
 {
     INSTRUMENT ();
 
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+    if (abstract_command->use_timestamp) {
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglinitialize_t *command =
             (command_eglinitialize_t *)abstract_command;
     command->result = server->dispatch.eglInitialize (server, command->dpy, command->major, command->minor);
-    
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+
+    if (abstract_command->use_timestamp) {    
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void
@@ -804,17 +808,21 @@ server_handle_eglcreatewindowsurface (
 {
     INSTRUMENT ();
 
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+    if (abstract_command->use_timestamp) {
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglcreatewindowsurface_t *command =
             (command_eglcreatewindowsurface_t *)abstract_command;
     command->result = server->dispatch.eglCreateWindowSurface (server, command->dpy, command->config, command->win, command->attrib_list);
-    
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+
+    if (abstract_command->use_timestamp) {    
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void
@@ -823,17 +831,21 @@ server_handle_eglcreatepbuffersurface (
 {
     INSTRUMENT ();
 
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+    if (abstract_command->use_timestamp) {
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglcreatepbuffersurface_t *command =
             (command_eglcreatepbuffersurface_t *)abstract_command;
     command->result = server->dispatch.eglCreatePbufferSurface (server, command->dpy, command->config, command->attrib_list);
-    
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+
+    if (abstract_command->use_timestamp) {    
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void
@@ -842,17 +854,21 @@ server_handle_eglcreatepixmapsurface (
 {
     INSTRUMENT ();
 
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+    if (abstract_command->use_timestamp) {
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglcreatepixmapsurface_t *command =
             (command_eglcreatepixmapsurface_t *)abstract_command;
     command->result = server->dispatch.eglCreatePixmapSurface (server, command->dpy, command->config, command->pixmap, command->attrib_list);
-    
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+
+    if (abstract_command->use_timestamp) {    
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void
@@ -896,18 +912,22 @@ server_handle_eglcreatepbufferfromclientbuffer (
     server_t *server, command_t *abstract_command)
 {
     INSTRUMENT ();
-    
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+
+    if (abstract_command->use_timestamp) { 
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglcreatepbufferfromclientbuffer_t *command =
             (command_eglcreatepbufferfromclientbuffer_t *)abstract_command;
     command->result = server->dispatch.eglCreatePbufferFromClientBuffer (server, command->dpy, command->buftype, command->buffer, command->config, command->attrib_list);
-    
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+
+    if (abstract_command->use_timestamp) { 
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void

@@ -3,6 +3,7 @@ BUILT_SOURCES =
 lib_LTLIBRARIES = libGPUProcess.la
 libGPUProcess_la_CFLAGS = \
 	$(GLES_CFLAGS) \
+        -DENABLE_PROFILING \
 	-Werror \
 	-Wall \
 	-Igenerated \

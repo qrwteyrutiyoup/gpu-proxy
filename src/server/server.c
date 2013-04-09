@@ -543,10 +543,12 @@ static void
 server_handle_eglterminate (server_t *server, command_t *abstract_command)
 {
     INSTRUMENT ();
-    
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+   
+    if (abstract_command->use_timestamp) { 
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglterminate_t *command =
         (command_eglterminate_t *)abstract_command;
@@ -555,9 +557,11 @@ server_handle_eglterminate (server_t *server, command_t *abstract_command)
     /* call server state */
     if (command->result == EGL_TRUE)
         _server_display_remove (server->egl_display);
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex);
+    if (abstract_command->use_timestamp) { 
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex);
+    }
 }
 
 static void
@@ -741,9 +745,12 @@ static void
 server_handle_eglgetdisplay (server_t *server, command_t *abstract_command)
 {
     INSTRUMENT ();
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+
+    if (abstract_command->use_timestamp) {
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglgetdisplay_t *command =
             (command_eglgetdisplay_t *)abstract_command;
@@ -775,9 +782,11 @@ server_handle_eglgetdisplay (server_t *server, command_t *abstract_command)
         XCloseDisplay (server_display);
 
 FINISH:
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+    if (abstract_command->use_timestamp) {
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void
@@ -894,17 +903,21 @@ server_handle_eglbindapi (server_t *server, command_t *abstract_command)
 {
     INSTRUMENT ();
 
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+    if (abstract_command->use_timestamp) { 
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglbindapi_t *command =
             (command_eglbindapi_t *)abstract_command;
     command->result = server->dispatch.eglBindAPI (server, command->api);
     
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+    if (abstract_command->use_timestamp) { 
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void
@@ -958,17 +971,21 @@ server_handle_eglreleaseteximage (
 {
     INSTRUMENT ();
     
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+    if (abstract_command->use_timestamp) { 
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglreleaseteximage_t *command =
             (command_eglreleaseteximage_t *)abstract_command;
     command->result = server->dispatch.eglReleaseTexImage (server, command->dpy, command->surface, command->buffer);
     
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+    if (abstract_command->use_timestamp) { 
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void
@@ -998,17 +1015,21 @@ server_handle_egldestroycontext (server_t *server, command_t *abstract_command)
 {
     INSTRUMENT ();
     
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+    if (abstract_command->use_timestamp) { 
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_egldestroycontext_t *command =
             (command_egldestroycontext_t *)abstract_command;
     command->result = server->dispatch.eglDestroyContext (server, command->dpy, command->ctx);
     
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+    if (abstract_command->use_timestamp) { 
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void
@@ -1322,18 +1343,22 @@ server_handle_glmapbufferoes (
     server_t *server, command_t *abstract_command)
 {
     INSTRUMENT ();
-    
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+
+    if (abstract_command->use_timestamp) {    
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_glmapbufferoes_t *command =
             (command_glmapbufferoes_t *)abstract_command;
     command->result = server->dispatch.glMapBufferOES (server, command->target, command->access);
     
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+    if (abstract_command->use_timestamp) {    
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void 

@@ -4414,7 +4414,8 @@ caching_client_glEGLImageTargetTexture2DOES (void* client, GLenum target, GLeglI
     CLIENT(client)->needs_timestamp = true;
 
     CACHING_CLIENT(client)->super_dispatch.glEGLImageTargetTexture2DOES (client, target, image);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged ? */
+    //clients_list_set_needs_timestamp ();
 }
 
 static void
@@ -4433,7 +4434,8 @@ caching_client_glEGLImageTargetRenderbufferStorageOES (void* client, GLenum targ
     CLIENT(client)->needs_timestamp = true;
 
     CACHING_CLIENT(client)->super_dispatch.glEGLImageTargetRenderbufferStorageOES (client, target, image);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged ? */
+    //clients_list_set_needs_timestamp ();
 }
 
 static void*
@@ -4451,11 +4453,8 @@ caching_client_glMapBufferOES (void* client, GLenum target, GLenum access)
         caching_client_glSetError (client, GL_INVALID_ENUM);
         return result;
     }
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
 
     result = CACHING_CLIENT(client)->super_dispatch.glMapBufferOES (client, target, access);
-    clients_list_set_needs_timestamp ();
 
     if (result == NULL)
         caching_client_set_needs_get_error (CLIENT (client));
@@ -4473,12 +4472,14 @@ caching_client_glUnmapBufferOES (void* client, GLenum target)
         caching_client_glSetError (client, GL_INVALID_ENUM);
         return result;
     }
+    /* FIXME: We should send this as async */
     /* send log */
     CLIENT(client)->needs_timestamp = true;
 
     result = CACHING_CLIENT(client)->super_dispatch.glUnmapBufferOES (client, target);
 
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged? */
+    //clients_list_set_needs_timestamp ();
     if (result != GL_TRUE)
         caching_client_set_needs_get_error (CLIENT (client));
     return result;
@@ -4832,10 +4833,11 @@ caching_client_eglGetDisplay (void *client,
         native = (NativeDisplayType) dpy;
     }
         
-    CLIENT(client)->needs_timestamp = true;
+    //CLIENT(client)->needs_timestamp = true;
 
     EGLDisplay result = CACHING_CLIENT(client)->super_dispatch.eglGetDisplay (client, native);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged? */
+    //clients_list_set_needs_timestamp ();
 
     if (result != EGL_NO_DISPLAY && cached_gl_display_find (result) == NULL) {
         mutex_lock (cached_gl_display_list_mutex);
@@ -4876,14 +4878,15 @@ caching_client_eglTerminate (void* client,
 {
     INSTRUMENT();
     /* send log */
-    CLIENT(client)->needs_timestamp = true;
+    //CLIENT(client)->needs_timestamp = true;
 
     if (CACHING_CLIENT(client)->super_dispatch.eglTerminate (client, display) == EGL_FALSE) {
-        clients_list_set_needs_timestamp ();
+        /* XXX: Do we need next command to be logged? */
+        //clients_list_set_needs_timestamp ();
         return EGL_FALSE;
     }
 
-    clients_list_set_needs_timestamp ();
+    //clients_list_set_needs_timestamp ();
     mutex_lock (cached_gl_states_mutex);
 
     list_node_t *states = cached_gl_states ()->head;
@@ -4923,10 +4926,11 @@ caching_client_eglBindAPI (void *client, EGLenum api)
     INSTRUMENT();
 
     /* send log */
-    CLIENT(client)->needs_timestamp = true;
+    //CLIENT(client)->needs_timestamp = true;
 
     EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglBindAPI (client, api);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged? */
+    //clients_list_set_needs_timestamp ();
     return result;
 }
 
@@ -4941,10 +4945,12 @@ caching_client_eglDestroySurface (void* client,
         return EGL_FALSE;
     
     /* send log */
+    /* FIXME: We should make this async */
     CLIENT(client)->needs_timestamp = true;
 
     EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglDestroySurface (client, display, surface);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged? */
+    //clients_list_set_needs_timestamp ();
     if (result == EGL_TRUE) {
         /* update gl states */
         _caching_client_destroy_surface (client, display, surface);
@@ -4958,14 +4964,15 @@ caching_client_eglReleaseThread (void* client)
 {
     INSTRUMENT();
     /* send log */
-    CLIENT(client)->needs_timestamp = true;
+    //CLIENT(client)->needs_timestamp = true;
 
     if (CACHING_CLIENT(client)->super_dispatch.eglReleaseThread (client) == EGL_FALSE) {
-        clients_list_set_needs_timestamp ();
+        /* XXX: Do we need next command to be logged? */
+        //clients_list_set_needs_timestamp ();
         return EGL_FALSE;
     }
 
-    clients_list_set_needs_timestamp ();
+    //clients_list_set_needs_timestamp ();
     _caching_client_make_current (client,
                                   EGL_NO_DISPLAY,
                                   EGL_NO_SURFACE,
@@ -4981,14 +4988,16 @@ caching_client_eglDestroyContext (void* client,
 {
     INSTRUMENT();
     /* send log */
-    CLIENT(client)->needs_timestamp = true;
+    /* FIXME: We should make this as async */
+    //CLIENT(client)->needs_timestamp = true;
 
     if (CACHING_CLIENT(client)->super_dispatch.eglDestroyContext (client, dpy, ctx) == EGL_FALSE) {
-        clients_list_set_needs_timestamp ();
+        /* XXX: Do we need next command to be logged ? */
+        //clients_list_set_needs_timestamp ();
         return EGL_FALSE; /* Failure, so do nothing locally. */
     }
 
-    clients_list_set_needs_timestamp ();
+    //clients_list_set_needs_timestamp ();
     /* Destroy our cached version of this context. */
     mutex_lock (cached_gl_states_mutex);
 
@@ -5073,7 +5082,9 @@ caching_client_glFlush (void *client)
     command_glflush_init (command);
 
     client_run_command_async (command);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need the next command to be logged ? */
+    CLIENT(client)->needs_timestamp = false;
+    //clients_list_set_needs_timestamp ();
 }
 
 static void
@@ -5136,7 +5147,9 @@ caching_client_eglSwapBuffers (void* client,
     command_eglswapbuffers_init (command, display, surface);
 
     client_run_command_async (command);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged ? */
+    CLIENT(client)->needs_timestamp = false;
+    //clients_list_set_needs_timestamp ();
     return EGL_TRUE;
 
 //    EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglSwapBuffers (client, display, surface);
@@ -5203,7 +5216,8 @@ caching_client_eglCreatePixmapSurface (void *client,
                                                             config,
                                                             native_pixmap,
                                                             attrib_list);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged? */
+    //clients_list_set_needs_timestamp ();
     if (result) {
         mutex_lock (cached_gl_display_list_mutex);
         cached_gl_surface_add (display, config, result);
@@ -5310,7 +5324,9 @@ caching_client_eglReleaseTexImage (void *client, EGLDisplay display,
                                                                   display,
                                                                   surface,
                                                                   buffer);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged ? */
+    CLIENT(client)->needs_timestamp = false;
+    //clients_list_set_needs_timestamp ();
     return result;
 }
 
@@ -5359,7 +5375,8 @@ caching_client_eglUnlockSurfaceKHR (void *client, EGLDisplay display,
     EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglUnlockSurfaceKHR(client,
                                                                  display,
                                                                  surface);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged? */
+    //clients_list_set_needs_timestamp ();
     return result;
 }
 
@@ -5398,7 +5415,8 @@ caching_client_eglDestroyImageKHR (void *client, EGLDisplay display,
     EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglDestroyImageKHR(client,
                                                                  display,
                                                                  image);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged? */
+    //clients_list_set_needs_timestamp ();
     return result;
 }
 
@@ -5434,7 +5452,8 @@ caching_client_eglDestroySyncKHR (void *client, EGLDisplay display,
     EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglDestroySyncKHR(client,
                                                                  display,
                                                                  sync);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged? */
+    //clients_list_set_needs_timestamp ();
     return result;
 }
 
@@ -5505,7 +5524,8 @@ caching_client_eglMapImageSEC (void *client, EGLDisplay display,
     void *result = CACHING_CLIENT(client)->super_dispatch.eglMapImageSEC(client,
                                                                  display,
                                                                  image);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged? */
+    //clients_list_set_needs_timestamp ();
     return result;
 }
 
@@ -5521,7 +5541,8 @@ caching_client_eglUnmapImageSEC (void *client, EGLDisplay display,
     EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglUnmapImageSEC(client,
                                                                  display,
                                                                  image);
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged? */
+    //clients_list_set_needs_timestamp ();
     return result;
 }
 
@@ -5597,7 +5618,8 @@ caching_client_eglCreateContext (void *client,
                                                                  share_context,
                                                                  attrib_list);
 
-    clients_list_set_needs_timestamp ();
+    /* XXX: Do we need next command to be logged? */
+    //clients_list_set_needs_timestamp ();
     if (result == EGL_NO_CONTEXT)
         return result;
 
@@ -5678,10 +5700,13 @@ caching_client_eglMakeCurrent (void* client,
         command_t *command = client_get_space_for_command (COMMAND_EGLMAKECURRENT);
         command_eglmakecurrent_init (command, display, draw, read, ctx);
         client_run_command_async (command);
-        if (! display_and_context_match)
+        /* XXX: Do we need next command to be logged ? */
+        CLIENT(client)->needs_timestamp = false;
+        /*if (! display_and_context_match)
             clients_list_set_needs_timestamp ();
         else
             CLIENT(client)->needs_timestamp = false;
+        */
 //    } else {
         /* Otherwise we must do this synchronously. */
 //        if (CACHING_CLIENT(client)->super_dispatch.eglMakeCurrent (client, display,

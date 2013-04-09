@@ -43,7 +43,9 @@ void
 name_handler_alloc_name (name_handler_t *name_handler,
                          GLuint buffer)
 {
-    if (buffer >= name_handler->last_name)
+    if (buffer > name_handler->last_name)
+        name_handler->last_name = buffer;
+    else if (buffer == name_handler->last_name)
         ++name_handler->last_name;
     else {
         link_list_t *current = name_handler->reusable_names;

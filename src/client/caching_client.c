@@ -5321,15 +5321,10 @@ caching_client_eglCopyBuffers (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
-
-    EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglCopyBuffers(client,
+    return CACHING_CLIENT(client)->super_dispatch.eglCopyBuffers(client,
                                                                  display,
                                                                  surface,
                                                                  native_pixmap);
-    clients_list_set_needs_timestamp ();
-    return result;
 }
 
 static EGLBoolean

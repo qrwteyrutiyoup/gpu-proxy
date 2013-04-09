@@ -5083,36 +5083,24 @@ caching_client_glFinish (void *client)
     
     if (!CLIENT(client)->active_state)
         return;
-    
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
 
     CACHING_CLIENT(client)->super_dispatch.glFlush (client);
-    clients_list_set_needs_timestamp ();
 }
 
 static EGLBoolean
 caching_client_eglWaitGL (void* client)
 {
     INSTRUMENT();
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
 
-    EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglWaitGL (client);
-    clients_list_set_needs_timestamp ();
-    return result;
+    return CACHING_CLIENT(client)->super_dispatch.eglWaitGL (client);
 }
 
 static EGLBoolean
 caching_client_eglWaitClient (void* client)
 {
     INSTRUMENT();
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
 
-    EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglWaitClient (client);
-    clients_list_set_needs_timestamp ();
-    return result;
+    return CACHING_CLIENT(client)->super_dispatch.eglWaitClient (client);
 }
 
 static EGLBoolean
@@ -5121,12 +5109,7 @@ caching_client_eglWaitNative (void* client,
 {
     INSTRUMENT();
     
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
-
-    EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglWaitNative (client, engine);
-    clients_list_set_needs_timestamp ();
-    return result;
+    return CACHING_CLIENT(client)->super_dispatch.eglWaitNative (client, engine);
 
 }
 

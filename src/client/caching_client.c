@@ -5149,12 +5149,8 @@ caching_client_eglInitialize (void *client, EGLDisplay display,
                               EGLint *major, EGLint *minor)
 {
     INSTRUMENT();
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
 
-    EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglInitialize (client, display, major, minor);
-    clients_list_set_needs_timestamp ();
-    return result;
+    return CACHING_CLIENT(client)->super_dispatch.eglInitialize (client, display, major, minor);
 }
 
 static EGLSurface

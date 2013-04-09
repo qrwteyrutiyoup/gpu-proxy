@@ -345,7 +345,7 @@ caching_client_glBindFramebuffer (void* client, GLenum target, GLuint framebuffe
         return;
     }
 
-    if (! egl_state_lookup_cached_framebuffer (state, framebuffer)) {
+    if (framebuffer && ! egl_state_lookup_cached_framebuffer (state, framebuffer)) {
         name_handler_alloc_name (state->framebuffer_name_handler, framebuffer);
         egl_state_create_cached_framebuffer (state, framebuffer);
     }
@@ -372,7 +372,7 @@ caching_client_glBindRenderbuffer (void* client, GLenum target, GLuint renderbuf
         return;
     }
 
-    if (! egl_state_lookup_cached_renderbuffer (state, renderbuffer)) {
+    if (renderbuffer && ! egl_state_lookup_cached_renderbuffer (state, renderbuffer)) {
         mutex_lock (cached_shared_states_mutex);
         name_handler_alloc_name (egl_state_get_renderbuffer_name_handler (state), renderbuffer);
         egl_state_create_cached_renderbuffer (state, renderbuffer);

@@ -5471,14 +5471,9 @@ caching_client_eglCreateDRMImageMESA (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
-
-    EGLImageKHR image = CACHING_CLIENT(client)->super_dispatch.eglCreateDRMImageMESA(client,
+    return CACHING_CLIENT(client)->super_dispatch.eglCreateDRMImageMESA(client,
                                                                  display,
                                                                  attrib_list);
-    clients_list_set_needs_timestamp ();
-    return image;
 }
 
 static EGLBoolean
@@ -5490,17 +5485,12 @@ caching_client_eglExportDRMImageMESA (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
-
-    EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglExportDRMImageMESA(client,
+    return CACHING_CLIENT(client)->super_dispatch.eglExportDRMImageMESA(client,
                                                                  display,
                                                                  image,
                                                                  name,
                                                                  handle,
                                                                  stride);
-    clients_list_set_needs_timestamp ();
-    return result;
 }
 
 static void * 

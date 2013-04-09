@@ -975,18 +975,22 @@ static void
 server_handle_eglcreatecontext (server_t *server, command_t *abstract_command)
 {
     INSTRUMENT ();
-    
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+
+    if (abstract_command->use_timestamp) {    
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglcreatecontext_t *command =
             (command_eglcreatecontext_t *)abstract_command;
     command->result = server->dispatch.eglCreateContext (server, command->dpy, command->config, command->share_context, command->attrib_list);
-    
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+
+    if (abstract_command->use_timestamp) {    
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void

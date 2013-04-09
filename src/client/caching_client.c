@@ -5409,14 +5409,15 @@ caching_client_eglCreateSyncKHR (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
-
     EGLSyncKHR result = CACHING_CLIENT(client)->super_dispatch.eglCreateSyncKHR(client,
                                                                  display,
                                                                  type,
                                                                  attrib_list);
-    clients_list_set_needs_timestamp ();
+    if (result) {
+        /* FIXME: We should save the result in display cache such
+         * that when deletesync, we can send as async
+         */
+    }
     return result;
 }
 
@@ -5426,6 +5427,7 @@ caching_client_eglDestroySyncKHR (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
+    /* FIXME: we should send this as async */
     /* send log */
     CLIENT(client)->needs_timestamp = true;
 
@@ -5443,16 +5445,11 @@ caching_client_eglClientWaitSyncKHR (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
-
-    EGLint result = CACHING_CLIENT(client)->super_dispatch.eglClientWaitSyncKHR(client,
+    return CACHING_CLIENT(client)->super_dispatch.eglClientWaitSyncKHR(client,
                                                                  display,
                                                                  sync,
                                                                  flags,
                                                                  timeout);
-    clients_list_set_needs_timestamp ();
-    return result;
 }
 
 static EGLBoolean
@@ -5461,15 +5458,11 @@ caching_client_eglSignalSyncKHR (void *client, EGLDisplay display,
 {
     INSTRUMENT();
 
-    /* send log */
-    CLIENT(client)->needs_timestamp = true;
 
-    EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglSignalSyncKHR(client,
+    return CACHING_CLIENT(client)->super_dispatch.eglSignalSyncKHR(client,
                                                                  display,
                                                                  sync,
                                                                  mode);
-    clients_list_set_needs_timestamp ();
-    return result;
 }
 
 static EGLImageKHR

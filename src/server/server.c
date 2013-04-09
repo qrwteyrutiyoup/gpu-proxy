@@ -1151,36 +1151,44 @@ server_handle_eglclientwaitsynckhr (
     server_t *server, command_t *abstract_command)
 {
     INSTRUMENT ();
-    
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+
+    if (abstract_command->use_timestamp) { 
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglclientwaitsynckhr_t *command =
             (command_eglclientwaitsynckhr_t *)abstract_command;
     command->result = server->dispatch.eglClientWaitSyncKHR (server, command->dpy, command->sync, command->flags, command->timeout);
-    
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+
+    if (abstract_command->use_timestamp) {    
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void
 server_handle_eglsignalsynckhr (server_t *server, command_t *abstract_command)
 {
     INSTRUMENT ();
-    
-    mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
-        wait_signal (server_state_signal, server_state_mutex);
+
+    if (abstract_command->use_timestamp) { 
+        mutex_lock (server_state_mutex);
+        while (! _server_allow_call (server->thread))
+            wait_signal (server_state_signal, server_state_mutex);
+    }
 
     command_eglsignalsynckhr_t *command =
             (command_eglsignalsynckhr_t *)abstract_command;
     command->result = server->dispatch.eglSignalSyncKHR (server, command->dpy, command->sync, command->mode);
-    
-    _server_remove_call_log ();
-    broadcast (server_state_signal);
-    mutex_unlock (server_state_mutex); 
+
+    if (abstract_command->use_timestamp) {    
+        _server_remove_call_log ();
+        broadcast (server_state_signal);
+        mutex_unlock (server_state_mutex); 
+    }
 }
 
 static void

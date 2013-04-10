@@ -2513,12 +2513,15 @@ caching_client_glFramebufferTexture2D (void* client,
         return;
     }
 
+    tex = egl_state_lookup_cached_texture (state, texture);
+    if (texture && ! tex) {
+        caching_client_glSetError (client, GL_INVALID_OPERATION);
+        return;
+    }
 
     CACHING_CLIENT(client)->super_dispatch.glFramebufferTexture2D (client, target, attachment,
                                                                    textarget, texture, level);
 
-    /* get cached texture */
-    tex = egl_state_lookup_cached_texture (state, texture);
     if (tex) {
         tex->framebuffer_id = state->framebuffer_binding;
         framebuffer_id = tex->framebuffer_id;

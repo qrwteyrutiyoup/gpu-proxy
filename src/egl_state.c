@@ -597,10 +597,14 @@ _create_framebuffer (GLuint id)
     framebuffer_t *framebuffer = (framebuffer_t *) malloc (sizeof (framebuffer_t));
     framebuffer->id = id;
     framebuffer->complete = FRAMEBUFFER_COMPLETE;
-    framebuffer->attached_image = 0;
-    framebuffer->attached_color_buffer = 0;
-    framebuffer->attached_stencil_buffer = 0;
-    framebuffer->attached_depth_buffer = 0;
+    framebuffer->attached_buffer[0].attached_object_id = 0;
+    framebuffer->attached_buffer[0].attached_object_type = GL_NONE;
+
+    framebuffer->attached_buffer[1].attached_object_id = 0;
+    framebuffer->attached_buffer[1].attached_object_type = GL_NONE;
+
+    framebuffer->attached_buffer[2].attached_object_id = 0;
+    framebuffer->attached_buffer[2].attached_object_type = GL_NONE;
     return framebuffer; 
 }
 void

@@ -71,10 +71,13 @@ typedef enum _framebuffer_status
 typedef struct _framebuffer
 {
     GLuint id;
-    GLuint attached_image;
-    GLuint attached_color_buffer;
-    GLuint attached_depth_buffer;
-    GLuint attached_stencil_buffer;
+    /* index 0: color buffer */
+    /* index 1: depth buffer */
+    /* index 2: stencil buffer */
+    struct _attachment {
+        GLuint attached_object_id;
+        GLenum attached_object_type;
+    } attached_buffer[3];
     framebuffer_status_t complete;
 } framebuffer_t;
 

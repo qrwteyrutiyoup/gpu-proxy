@@ -2489,6 +2489,21 @@ finish:
 }
 
 static void
+caching_client_attach_object(framebuffer_t *framebuffer, GLenum attachment, GLenum type, GLuint object)
+{
+    if (attachment == GL_COLOR_ATTACHMENT0) {
+        framebuffer->attached_buffer[0].attached_object_id = object;
+        framebuffer->attached_buffer[0].attached_object_type = type;
+    } else if (attachment == GL_DEPTH_ATTACHMENT) {
+        framebuffer->attached_buffer[1].attached_object_id = object;
+        framebuffer->attached_buffer[1].attached_object_type = type;
+    } else if (attachment == GL_STENCIL_ATTACHMENT) {
+        framebuffer->attached_buffer[2].attached_object_id = object;
+        framebuffer->attached_buffer[2].attached_object_type = type;
+    }
+}
+
+static void
 caching_client_glFramebufferRenderbuffer (void* client, GLenum target, GLenum attachment,
                                           GLenum renderbuffertarget,
                                           GLenum renderbuffer)
@@ -2513,17 +2528,7 @@ caching_client_glFramebufferRenderbuffer (void* client, GLenum target, GLenum at
         framebuffer_t *framebuffer = egl_state_lookup_cached_framebuffer (state, state->framebuffer_binding);
         if (framebuffer) {
             framebuffer->complete = FRAMEBUFFER_COMPLETE_UNKNOWN;
-            
-            if (attachment == GL_COLOR_ATTACHMENT0) {
-                framebuffer->attached_buffer[0].attached_object_id = renderbuffer;
-                framebuffer->attached_buffer[0].attached_object_type = GL_RENDERBUFFER;
-            } else if (attachment == GL_DEPTH_ATTACHMENT) {
-                framebuffer->attached_buffer[1].attached_object_id = renderbuffer;
-                framebuffer->attached_buffer[1].attached_object_type = GL_RENDERBUFFER;
-            } else if (attachment == GL_STENCIL_ATTACHMENT) {
-                framebuffer->attached_buffer[2].attached_object_id = renderbuffer;
-                framebuffer->attached_buffer[2].attached_object_type = GL_RENDERBUFFER;
-            }
+            caching_client_attach_object (framebuffer, attachment, GL_RENDERBUFFER, renderbuffer);
         }
     }
     /* update renderbuffer cache */
@@ -2568,18 +2573,8 @@ caching_client_glFramebufferTexture2D (void* client,
         /* update framebuffer in cache */
         if (framebuffer_id) {
             framebuffer_t *framebuffer = egl_state_lookup_cached_framebuffer (state, framebuffer_id);
-            if (framebuffer) {
-                if (attachment == GL_COLOR_ATTACHMENT0) {
-                    framebuffer->attached_buffer[0].attached_object_id = texture;
-                    framebuffer->attached_buffer[0].attached_object_type = GL_TEXTURE;
-                } else if (attachment == GL_DEPTH_ATTACHMENT) {
-                    framebuffer->attached_buffer[1].attached_object_id = texture;
-                    framebuffer->attached_buffer[1].attached_object_type = GL_TEXTURE;
-                } else if (attachment == GL_STENCIL_ATTACHMENT) {
-                    framebuffer->attached_buffer[2].attached_object_id = texture;
-                    framebuffer->attached_buffer[2].attached_object_type = GL_TEXTURE;
-                }
-            }
+            if (framebuffer)
+                caching_client_attach_object (framebuffer, attachment, GL_TEXTURE, texture);
         }
     }
 }
@@ -5156,16 +5151,7 @@ caching_client_glFramebufferTexture3DOES (void* client,
             framebuffer = egl_state_lookup_cached_framebuffer (state, framebuffer_id);
             if (framebuffer) {
                 framebuffer->complete = FRAMEBUFFER_COMPLETE_UNKNOWN;
-                if (attachment == GL_COLOR_ATTACHMENT0) {
-                    framebuffer->attached_buffer[0].attached_object_id = texture;
-                    framebuffer->attached_buffer[0].attached_object_type = GL_TEXTURE;
-                } else if (attachment == GL_DEPTH_ATTACHMENT) {
-                    framebuffer->attached_buffer[1].attached_object_id = texture;
-                    framebuffer->attached_buffer[1].attached_object_type = GL_TEXTURE;
-                } else if (attachment == GL_STENCIL_ATTACHMENT) {
-                    framebuffer->attached_buffer[2].attached_object_id = texture;
-                    framebuffer->attached_buffer[2].attached_object_type = GL_TEXTURE;
-                }
+                caching_client_attach_object (framebuffer, attachment, GL_TEXTURE, texture);
             }
         }
     }
@@ -5337,17 +5323,7 @@ caching_client_glFramebufferTexture2DMultisampleEXT (void* client, GLenum target
             framebuffer = egl_state_lookup_cached_framebuffer (state, framebuffer_id);
             if (framebuffer) {
                 framebuffer->complete = FRAMEBUFFER_COMPLETE_UNKNOWN;
-                if (attachment == GL_COLOR_ATTACHMENT0) {
-                    framebuffer->attached_buffer[0].attached_object_id = texture;
-                    framebuffer->attached_buffer[0].attached_object_type = GL_TEXTURE;
-                } else if (attachment == GL_DEPTH_ATTACHMENT) {
-                    framebuffer->attached_buffer[1].attached_object_id = texture;
-                    framebuffer->attached_buffer[1].attached_object_type = GL_TEXTURE;
-                } else if (attachment == GL_STENCIL_ATTACHMENT) {
-                    framebuffer->attached_buffer[2].attached_object_id = texture;
-                    framebuffer->attached_buffer[2].attached_object_type = GL_TEXTURE;
-                }
-
+                caching_client_attach_object (framebuffer, attachment, GL_TEXTURE, texture);
             }
         }
     }
@@ -5389,17 +5365,7 @@ caching_client_glFramebufferTexture2DMultisampleIMG (void* client, GLenum target
             framebuffer = egl_state_lookup_cached_framebuffer (state, framebuffer_id);
             if (framebuffer) {
                 framebuffer->complete = FRAMEBUFFER_COMPLETE_UNKNOWN;
-                if (attachment == GL_COLOR_ATTACHMENT0) {
-                    framebuffer->attached_buffer[0].attached_object_id = texture;
-                    framebuffer->attached_buffer[0].attached_object_type = GL_TEXTURE;
-                } else if (attachment == GL_DEPTH_ATTACHMENT) {
-                    framebuffer->attached_buffer[1].attached_object_id = texture;
-                    framebuffer->attached_buffer[1].attached_object_type = GL_TEXTURE;
-                } else if (attachment == GL_STENCIL_ATTACHMENT) {
-                    framebuffer->attached_buffer[2].attached_object_id = texture;
-                    framebuffer->attached_buffer[2].attached_object_type = GL_TEXTURE;
-                }
-
+                caching_client_attach_object (framebuffer, attachment, GL_TEXTURE, texture);
             }
         }
     }

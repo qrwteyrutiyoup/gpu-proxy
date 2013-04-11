@@ -10,7 +10,7 @@ _call_order_list ()
     return &call_list;
 }
 
-void
+static void
 _call_order_list_append (thread_t server)
 {
     link_list_t *list = _call_order_list ();
@@ -20,7 +20,7 @@ _call_order_list_append (thread_t server)
     link_list_append (list, log, free);
 }
 
-void
+static void
 _call_order_list_remove ()
 {
     link_list_t *list = _call_order_list ();
@@ -29,7 +29,7 @@ _call_order_list_remove ()
         link_list_delete_element (list, list->head);
 }
 
-bool
+static bool
 _call_order_list_head_is_server (thread_t server)
 {
     list_node_t *head = _call_order_list ()->head;
@@ -43,21 +43,21 @@ _call_order_list_head_is_server (thread_t server)
     return false;
 }
 
-/* release/lock functions */
+/* Public functions. */
 void
-_server_append_call_log (thread_t server)
+sync_queue_append_call_log (thread_t server)
 {
     _call_order_list_append (server);
 }
 
 bool
-_server_allow_call (thread_t server)
+sync_queue_allow_call (thread_t server)
 {
     return _call_order_list_head_is_server (server);
 }
 
 void
-_server_remove_call_log ()
+sync_queue_remove_call_log ()
 {
     _call_order_list_remove ();
 }

@@ -40,21 +40,12 @@ typedef struct _server_log {
 } server_log_t;
 
 private void
-_call_order_list_append (thread_t server);
-
-private void
-_call_order_list_remove ();
+sync_queue_append_call_log (thread_t server);
 
 private bool
-_call_order_list_head_is_server (thread_t server);
+sync_queue_allow_call (thread_t server);
 
 private void
-_server_append_call_log (thread_t server);
-
-private bool
-_server_allow_call (thread_t server);
-
-private void
-_server_remove_call_log ();
+sync_queue_remove_call_log ();
 
 #endif

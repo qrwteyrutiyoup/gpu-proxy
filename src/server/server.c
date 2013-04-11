@@ -136,7 +136,7 @@ server_handle_glgenbuffers (server_t *server,
 
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -159,7 +159,7 @@ server_handle_glgenbuffers (server_t *server,
     command_glgenbuffers_destroy_arguments (command);
     /* remove this call log */
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -172,7 +172,7 @@ server_handle_gldeletebuffers (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -195,7 +195,7 @@ server_handle_gldeletebuffers (server_t *server, command_t *abstract_command)
     command_gldeletebuffers_destroy_arguments (command);
         
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -208,9 +208,9 @@ server_handle_glgenframebuffers (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         mutex_unlock (server_state_mutex);
     }
 
@@ -233,7 +233,7 @@ server_handle_glgenframebuffers (server_t *server, command_t *abstract_command)
     command_glgenframebuffers_destroy_arguments (command);
     
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -246,7 +246,7 @@ server_handle_gldeleteframebuffers (server_t *server, command_t *abstract_comman
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -269,7 +269,7 @@ server_handle_gldeleteframebuffers (server_t *server, command_t *abstract_comman
     command_gldeleteframebuffers_destroy_arguments (command);
     
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -282,7 +282,7 @@ server_handle_glgentextures (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -305,7 +305,7 @@ server_handle_glgentextures (server_t *server, command_t *abstract_command)
     command_glgentextures_destroy_arguments (command);
     
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -318,7 +318,7 @@ server_handle_gldeletetextures (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -341,7 +341,7 @@ server_handle_gldeletetextures (server_t *server, command_t *abstract_command)
     command_gldeletetextures_destroy_arguments (command);
     
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -355,7 +355,7 @@ server_handle_glgenrenderbuffers (server_t *server,
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -378,7 +378,7 @@ server_handle_glgenrenderbuffers (server_t *server,
     command_glgenrenderbuffers_destroy_arguments (command);
     
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -391,7 +391,7 @@ server_handle_gldeleterenderbuffers (server_t *server, command_t *abstract_comma
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -413,7 +413,7 @@ server_handle_gldeleterenderbuffers (server_t *server, command_t *abstract_comma
     command_gldeleterenderbuffers_destroy_arguments (command);
     
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -426,7 +426,7 @@ server_handle_glcreateprogram (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -441,7 +441,7 @@ server_handle_glcreateprogram (server_t *server, command_t *abstract_command)
     mutex_unlock (name_mapping_mutex);
     
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -455,7 +455,7 @@ server_handle_gldeleteprogram (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -472,7 +472,7 @@ server_handle_gldeleteprogram (server_t *server, command_t *abstract_command)
     command_gldeleteprogram_destroy_arguments (command);
     
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -485,7 +485,7 @@ server_handle_glcreateshader (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -500,7 +500,7 @@ server_handle_glcreateshader (server_t *server, command_t *abstract_command)
     mutex_unlock (name_mapping_mutex);
     
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -513,7 +513,7 @@ server_handle_gldeleteshader (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -533,7 +533,7 @@ server_handle_gldeleteshader (server_t *server, command_t *abstract_command)
     command_gldeleteshader_destroy_arguments (command);
     
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -547,7 +547,7 @@ server_handle_eglterminate (server_t *server, command_t *abstract_command)
    
     if (abstract_command->use_timestamp) { 
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -559,7 +559,7 @@ server_handle_eglterminate (server_t *server, command_t *abstract_command)
     if (command->result == EGL_TRUE)
         _server_display_remove (server->egl_display);
     if (abstract_command->use_timestamp) { 
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex);
     }
@@ -571,7 +571,7 @@ server_handle_eglreleasethread (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglreleasethread_t *command =
@@ -582,7 +582,7 @@ server_handle_eglreleasethread (server_t *server, command_t *abstract_command)
     if (command->result == EGL_TRUE)
         _server_display_remove (server->egl_display);
     
-    _server_remove_call_log ();
+    sync_queue_remove_call_log ();
     broadcast (server_state_signal);
     mutex_unlock (server_state_mutex); 
 }
@@ -597,7 +597,7 @@ server_handle_eglmakecurrent (server_t *server, command_t *abstract_command)
 
     mutex_lock (server_state_mutex);
     if (abstract_command->use_timestamp) {
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -613,7 +613,7 @@ server_handle_eglmakecurrent (server_t *server, command_t *abstract_command)
     }
     
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
     }
     mutex_unlock (server_state_mutex); 
@@ -625,12 +625,12 @@ server_handle_glflush (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     server->dispatch.glFlush (server);
     
-    _server_remove_call_log ();
+    sync_queue_remove_call_log ();
     broadcast (server_state_signal);
     mutex_unlock (server_state_mutex); 
 }
@@ -642,13 +642,13 @@ server_handle_glfinish (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) {    
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
     server->dispatch.glFinish (server);
 
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -661,7 +661,7 @@ server_handle_eglwaitnative (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) { 
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -671,7 +671,7 @@ server_handle_eglwaitnative (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglWaitNative (server, command->engine);
 
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -684,7 +684,7 @@ server_handle_eglwaitgl (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) { 
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -694,7 +694,7 @@ server_handle_eglwaitgl (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglWaitGL (server);
 
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -707,7 +707,7 @@ server_handle_eglwaitclient (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) { 
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -717,7 +717,7 @@ server_handle_eglwaitclient (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglWaitClient (server);
 
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -729,7 +729,7 @@ server_handle_eglswapbuffers (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglswapbuffers_t *command =
@@ -737,7 +737,7 @@ server_handle_eglswapbuffers (server_t *server, command_t *abstract_command)
 
     command->result = server->dispatch.eglSwapBuffers (server, command->dpy,                                                       command->surface);
 
-    _server_remove_call_log ();
+    sync_queue_remove_call_log ();
     broadcast (server_state_signal);
     mutex_unlock (server_state_mutex); 
 }
@@ -749,7 +749,7 @@ server_handle_eglgetdisplay (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -784,7 +784,7 @@ server_handle_eglgetdisplay (server_t *server, command_t *abstract_command)
 
 FINISH:
     if (abstract_command->use_timestamp) {
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -797,7 +797,7 @@ server_handle_eglinitialize (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -806,7 +806,7 @@ server_handle_eglinitialize (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglInitialize (server, command->dpy, command->major, command->minor);
 
     if (abstract_command->use_timestamp) {    
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -820,7 +820,7 @@ server_handle_eglcreatewindowsurface (
 
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -829,7 +829,7 @@ server_handle_eglcreatewindowsurface (
     command->result = server->dispatch.eglCreateWindowSurface (server, command->dpy, command->config, command->win, command->attrib_list);
 
     if (abstract_command->use_timestamp) {    
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -843,7 +843,7 @@ server_handle_eglcreatepbuffersurface (
 
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -852,7 +852,7 @@ server_handle_eglcreatepbuffersurface (
     command->result = server->dispatch.eglCreatePbufferSurface (server, command->dpy, command->config, command->attrib_list);
 
     if (abstract_command->use_timestamp) {    
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -866,7 +866,7 @@ server_handle_eglcreatepixmapsurface (
 
     if (abstract_command->use_timestamp) {
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -875,7 +875,7 @@ server_handle_eglcreatepixmapsurface (
     command->result = server->dispatch.eglCreatePixmapSurface (server, command->dpy, command->config, command->pixmap, command->attrib_list);
 
     if (abstract_command->use_timestamp) {    
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -887,14 +887,14 @@ server_handle_egldestroysurface (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
 
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_egldestroysurface_t *command =
             (command_egldestroysurface_t *)abstract_command;
     command->result = server->dispatch.eglDestroySurface (server, command->dpy, command->surface);
     
-    _server_remove_call_log ();
+    sync_queue_remove_call_log ();
     broadcast (server_state_signal);
     mutex_unlock (server_state_mutex); 
 }
@@ -906,7 +906,7 @@ server_handle_eglbindapi (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) { 
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -915,7 +915,7 @@ server_handle_eglbindapi (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglBindAPI (server, command->api);
     
     if (abstract_command->use_timestamp) { 
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -929,7 +929,7 @@ server_handle_eglcreatepbufferfromclientbuffer (
 
     if (abstract_command->use_timestamp) { 
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -938,7 +938,7 @@ server_handle_eglcreatepbufferfromclientbuffer (
     command->result = server->dispatch.eglCreatePbufferFromClientBuffer (server, command->dpy, command->buftype, command->buffer, command->config, command->attrib_list);
 
     if (abstract_command->use_timestamp) { 
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -951,7 +951,7 @@ server_handle_eglbindteximage (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) {    
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -960,7 +960,7 @@ server_handle_eglbindteximage (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglBindTexImage (server, command->dpy, command->surface, command->buffer);
 
     if (abstract_command->use_timestamp) {    
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -974,7 +974,7 @@ server_handle_eglreleaseteximage (
     
     if (abstract_command->use_timestamp) { 
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -983,7 +983,7 @@ server_handle_eglreleaseteximage (
     command->result = server->dispatch.eglReleaseTexImage (server, command->dpy, command->surface, command->buffer);
     
     if (abstract_command->use_timestamp) { 
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -996,7 +996,7 @@ server_handle_eglcreatecontext (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) {    
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -1005,7 +1005,7 @@ server_handle_eglcreatecontext (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglCreateContext (server, command->dpy, command->config, command->share_context, command->attrib_list);
 
     if (abstract_command->use_timestamp) {    
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -1018,7 +1018,7 @@ server_handle_egldestroycontext (server_t *server, command_t *abstract_command)
     
     if (abstract_command->use_timestamp) { 
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -1027,7 +1027,7 @@ server_handle_egldestroycontext (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglDestroyContext (server, command->dpy, command->ctx);
     
     if (abstract_command->use_timestamp) { 
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -1040,7 +1040,7 @@ server_handle_eglcopybuffers (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) {    
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -1049,7 +1049,7 @@ server_handle_eglcopybuffers (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglCopyBuffers (server, command->dpy, command->surface, command->target);
 
     if (abstract_command->use_timestamp) {    
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -1062,7 +1062,7 @@ server_handle_egllocksurfacekhr (server_t *server, command_t *abstract_command)
    
     if (abstract_command->use_timestamp) { 
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -1071,7 +1071,7 @@ server_handle_egllocksurfacekhr (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglLockSurfaceKHR (server, command->display, command->surface, command->attrib_list);
 
     if (abstract_command->use_timestamp) {    
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -1084,14 +1084,14 @@ server_handle_eglunlocksurfacekhr (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglunlocksurfacekhr_t *command =
             (command_eglunlocksurfacekhr_t *)abstract_command;
     command->result = server->dispatch.eglUnlockSurfaceKHR (server, command->display, command->surface);
     
-    _server_remove_call_log ();
+    sync_queue_remove_call_log ();
     broadcast (server_state_signal);
     mutex_unlock (server_state_mutex); 
 }
@@ -1103,7 +1103,7 @@ server_handle_eglcreateimagekhr (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) { 
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -1112,7 +1112,7 @@ server_handle_eglcreateimagekhr (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglCreateImageKHR (server, command->dpy, command->ctx, command->target, command->buffer, command->attrib_list);
     
     if (abstract_command->use_timestamp) { 
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -1125,14 +1125,14 @@ server_handle_egldestroyimagekhr (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_egldestroyimagekhr_t *command =
             (command_egldestroyimagekhr_t *)abstract_command;
     command->result = server->dispatch.eglDestroyImageKHR (server, command->dpy, command->image);
     
-    _server_remove_call_log ();
+    sync_queue_remove_call_log ();
     broadcast (server_state_signal);
     mutex_unlock (server_state_mutex); 
 }
@@ -1144,7 +1144,7 @@ server_handle_eglcreatesynckhr (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) { 
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -1153,7 +1153,7 @@ server_handle_eglcreatesynckhr (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglCreateSyncKHR (server, command->dpy, command->type, command->attrib_list);
     
     if (abstract_command->use_timestamp) { 
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -1167,7 +1167,7 @@ server_handle_egldestroysynckhr (server_t *server, command_t *abstract_command)
             (command_egldestroysynckhr_t *)abstract_command;
     command->result = server->dispatch.eglDestroySyncKHR (server, command->dpy, command->sync);
     
-    _server_remove_call_log ();
+    sync_queue_remove_call_log ();
     broadcast (server_state_signal);
     mutex_unlock (server_state_mutex); 
 }
@@ -1180,7 +1180,7 @@ server_handle_eglclientwaitsynckhr (
 
     if (abstract_command->use_timestamp) { 
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -1189,7 +1189,7 @@ server_handle_eglclientwaitsynckhr (
     command->result = server->dispatch.eglClientWaitSyncKHR (server, command->dpy, command->sync, command->flags, command->timeout);
 
     if (abstract_command->use_timestamp) {    
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -1202,7 +1202,7 @@ server_handle_eglsignalsynckhr (server_t *server, command_t *abstract_command)
 
     if (abstract_command->use_timestamp) { 
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -1211,7 +1211,7 @@ server_handle_eglsignalsynckhr (server_t *server, command_t *abstract_command)
     command->result = server->dispatch.eglSignalSyncKHR (server, command->dpy, command->sync, command->mode);
 
     if (abstract_command->use_timestamp) {    
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -1225,7 +1225,7 @@ server_handle_eglcreatedrmimagemesa (
 
     if (abstract_command->use_timestamp) { 
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -1234,7 +1234,7 @@ server_handle_eglcreatedrmimagemesa (
     command->result = server->dispatch.eglCreateDRMImageMESA (server, command->dpy, command->attrib_list);
     
     if (abstract_command->use_timestamp) { 
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -1248,7 +1248,7 @@ server_handle_eglexportdrmimagemesa (
     
     if (abstract_command->use_timestamp) { 
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -1257,7 +1257,7 @@ server_handle_eglexportdrmimagemesa (
     command->result = server->dispatch.eglExportDRMImageMESA (server, command->dpy, command->image, command->name, command->handle, command->stride);
     
     if (abstract_command->use_timestamp) { 
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -1269,14 +1269,14 @@ server_handle_eglmapimagesec (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglmapimagesec_t *command =
             (command_eglmapimagesec_t *)abstract_command;
     command->result = server->dispatch.eglMapImageSEC (server, command->display, command->image);
     
-    _server_remove_call_log ();
+    sync_queue_remove_call_log ();
     broadcast (server_state_signal);
     mutex_unlock (server_state_mutex); 
 }
@@ -1287,14 +1287,14 @@ server_handle_eglunmapimagesec (server_t *server, command_t *abstract_command)
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_eglunmapimagesec_t *command =
             (command_eglunmapimagesec_t *)abstract_command;
     command->result = server->dispatch.eglUnmapImageSEC (server, command->display, command->image);
     
-    _server_remove_call_log ();
+    sync_queue_remove_call_log ();
     broadcast (server_state_signal);
     mutex_unlock (server_state_mutex); 
 }
@@ -1306,7 +1306,7 @@ server_handle_gleglimagetargettexture2does (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_gleglimagetargettexture2does_t *command =
@@ -1314,7 +1314,7 @@ server_handle_gleglimagetargettexture2does (
     server->dispatch.glEGLImageTargetTexture2DOES (server, command->target, command->image);
     command_gleglimagetargettexture2does_destroy_arguments (command);
     
-    _server_remove_call_log ();
+    sync_queue_remove_call_log ();
     broadcast (server_state_signal);
     mutex_unlock (server_state_mutex); 
 }
@@ -1326,7 +1326,7 @@ server_handle_gleglimagetargetrenderbufferstorageoes (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_gleglimagetargetrenderbufferstorageoes_t *command =
@@ -1334,7 +1334,7 @@ server_handle_gleglimagetargetrenderbufferstorageoes (
     server->dispatch.glEGLImageTargetRenderbufferStorageOES (server, command->target, command->image);
     command_gleglimagetargetrenderbufferstorageoes_destroy_arguments (command);
     
-    _server_remove_call_log ();
+    sync_queue_remove_call_log ();
     broadcast (server_state_signal);
     mutex_unlock (server_state_mutex); 
 }
@@ -1347,7 +1347,7 @@ server_handle_glmapbufferoes (
 
     if (abstract_command->use_timestamp) {    
         mutex_lock (server_state_mutex);
-        while (! _server_allow_call (server->thread))
+        while (! sync_queue_allow_call (server->thread))
             wait_signal (server_state_signal, server_state_mutex);
     }
 
@@ -1356,7 +1356,7 @@ server_handle_glmapbufferoes (
     command->result = server->dispatch.glMapBufferOES (server, command->target, command->access);
     
     if (abstract_command->use_timestamp) {    
-        _server_remove_call_log ();
+        sync_queue_remove_call_log ();
         broadcast (server_state_signal);
         mutex_unlock (server_state_mutex); 
     }
@@ -1369,14 +1369,14 @@ server_handle_glunmapbufferoes (
     INSTRUMENT ();
     
     mutex_lock (server_state_mutex);
-    while (! _server_allow_call (server->thread))
+    while (! sync_queue_allow_call (server->thread))
         wait_signal (server_state_signal, server_state_mutex);
 
     command_glunmapbufferoes_t *command =
             (command_glunmapbufferoes_t *)abstract_command;
     command->result = server->dispatch.glUnmapBufferOES (server, command->target);
     
-    _server_remove_call_log ();
+    sync_queue_remove_call_log ();
     broadcast (server_state_signal);
     mutex_unlock (server_state_mutex); 
 }
@@ -1517,7 +1517,7 @@ server_handle_log (server_t *server, command_t *abstract_command)
     command_log_t *command = (command_log_t *)abstract_command;
 
     mutex_lock (server_state_mutex);
-    _server_append_call_log (abstract_command->server_id);
+    sync_queue_append_call_log (abstract_command->server_id);
     command->result = true;
     mutex_unlock (server_state_mutex);
 }

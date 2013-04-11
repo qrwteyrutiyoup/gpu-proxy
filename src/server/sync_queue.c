@@ -25,7 +25,7 @@ _call_order_list_remove ()
         link_list_delete_element (&call_list, call_list.head);
 }
 
-static bool
+bool
 _call_order_list_head_is_server (thread_t server, double timestamp)
 {
     list_node_t *head = call_list.head;

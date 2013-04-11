@@ -3067,11 +3067,7 @@ class GLGenerator(object):
         file.Write("{\n")
         file.Write("    INSTRUMENT ();\n")
         file.Write("\n");
-        file.Write("    if (abstract_command->use_timestamp == true) {\n");
-        file.Write("        mutex_lock (server_state_mutex);\n");
-        file.Write("        while (! sync_queue_allow_call (server->thread))\n");
-        file.Write("            wait_signal (server_state_signal, server_state_mutex);\n");
-        file.Write("    }\n");
+        file.Write("        sync_queue_allow_call (abstract_command, server->thread);\n");
         file.Write("\n");
 
         need_destructor_call = func.NeedsDestructor() or self.HasCustomDestroyArguments(func)
@@ -3092,11 +3088,7 @@ class GLGenerator(object):
             file.Write("          hash_insert (name_mapping_%s, *data, data);\n" %func.GetMappedNameType())
             file.Write("          %s = data;\n" %mapped_name)
           else:
-            file.Write("          if (abstract_command->use_timestamp) {\n")
-            file.Write("              sync_queue_remove_call_log ();\n")
-            file.Write("              broadcast (server_state_signal);\n")
-            file.Write("              mutex_unlock (server_state_mutex);\n")
-            file.Write("          }\n")
+            file.Write("              sync_queue_remove_call_log (abstract_command);\n")
             file.Write("          return;\n");
           file.Write("       }\n")
           file.Write("       command->%s = *%s;\n" % (mapped_name, mapped_name))
@@ -3117,11 +3109,7 @@ class GLGenerator(object):
         if need_destructor_call:
           file.Write("    command_%s_destroy_arguments (command);\n" % func.name.lower())
         file.Write("\n");
-        file.Write("    if (abstract_command->use_timestamp) {\n");
-        file.Write("        sync_queue_remove_call_log ();\n");
-        file.Write("        broadcast (server_state_signal);\n");
-        file.Write("        mutex_unlock (server_state_mutex);\n");
-        file.Write("    }\n");
+        file.Write("    sync_queue_remove_call_log (abstract_command);\n");
         file.Write("}\n\n")
 
     file.Write("static void\n")

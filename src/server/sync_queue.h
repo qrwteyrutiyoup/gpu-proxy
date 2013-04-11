@@ -1,6 +1,7 @@
 #ifndef GPUPROCESS_SYNC_QUEUE_H
 #define GPUPROCESS_SYNC_QUEUE_H
 
+#include "command.h"
 #include "compiler_private.h"
 #include "thread_private.h"
 #include "types_private.h"
@@ -42,10 +43,11 @@ typedef struct _server_log {
 private void
 sync_queue_append_call_log (thread_t server);
 
-private bool
-sync_queue_allow_call (thread_t server);
+private void
+sync_queue_allow_call (command_t *command,
+                       thread_t server);
 
 private void
-sync_queue_remove_call_log ();
+sync_queue_remove_call_log (command_t *command);
 
 #endif

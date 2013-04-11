@@ -3,6 +3,9 @@
 
 #include <stdlib.h>
 
+mutex_static_init (sync_queue_mutex);
+signal_static_init (sync_queue_signal);
+
 static link_list_t call_list = {NULL, NULL};
 
 static void
@@ -38,18 +41,29 @@ _call_order_list_head_is_server (thread_t server)
 void
 sync_queue_append_call_log (thread_t server)
 {
+    mutex_lock (sync_queue_mutex);
     _call_order_list_append (server);
-}
-
-bool
-sync_queue_allow_call (thread_t server)
-{
-    return _call_order_list_head_is_server (server);
+    mutex_unlock (sync_queue_mutex);
 }
 
 void
-sync_queue_remove_call_log ()
+sync_queue_allow_call (command_t *command,
+                       thread_t server)
 {
-    _call_order_list_remove ();
+    if (command->use_timestamp) {
+        mutex_lock (sync_queue_mutex);
+        while (! _call_order_list_head_is_server (server))
+            wait_signal (sync_queue_signal, sync_queue_mutex);
+    }
+}
+
+void
+sync_queue_remove_call_log (command_t *command)
+{
+    if (command->use_timestamp) {
+        _call_order_list_remove ();
+        broadcast (sync_queue_signal);
+        mutex_unlock (sync_queue_mutex);
+    }
 }
 

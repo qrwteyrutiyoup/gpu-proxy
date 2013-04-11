@@ -8,6 +8,7 @@
 #include "caching_client_private.h"
 #include "command.h"
 #include "name_handler.h"
+#include "pilot_server.h"
 
 #include <sys/prctl.h>
 #include <sys/types.h>

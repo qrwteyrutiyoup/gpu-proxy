@@ -34,6 +34,8 @@ libGPUProcess_la_SOURCES = \
 	ring_buffer.h \
 	ring_buffer.c \
 	server/gl_server_private.h \
+	server/pilot_server.h \
+	server/pilot_server.c \
 	server/server.h \
 	server/server.c \
 	server/sync_queue.c \

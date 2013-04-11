@@ -767,12 +767,12 @@ server_handle_eglgetdisplay (server_t *server, command_t *abstract_command)
         head = head->next;
     }
 
-    Display *server_display = XOpenDisplay (NULL);
+    Display *client_display = command->display_id;
+    Display *server_display = XOpenDisplay (DisplayString(client_display));
     if (! server_display) {
         command->result = EGL_NO_DISPLAY;
         goto FINISH;
     }
-    Display *client_display = command->display_id;
 
     command->display_id = server_display;
     command->result = server->dispatch.eglGetDisplay (server, command->display_id);

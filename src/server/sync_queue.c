@@ -59,6 +59,8 @@ sync_queue_allow_call (command_t *command,
         while (! _call_order_list_head_is_server (server,
                                                   command->timestamp))
             wait_signal (sync_queue_signal, sync_queue_mutex);
+
+        mutex_unlock (sync_queue_mutex);
     }
 }
 
@@ -66,6 +68,7 @@ void
 sync_queue_remove_call_log (command_t *command)
 {
     if (command->use_timestamp) {
+        mutex_lock (sync_queue_mutex);
         _call_order_list_remove ();
         broadcast (sync_queue_signal);
         mutex_unlock (sync_queue_mutex);

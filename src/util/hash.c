@@ -142,6 +142,25 @@ hash_lookup (HashTable *table, GLuint key)
     return res;
 }
 
+bool
+hash_contains (HashTable *table, GLuint key)
+{
+    GLuint pos;
+    const struct HashEntry *entry;
+
+    assert (table);
+    /* key can be 0 */
+
+    pos = HASH_FUNC (key);
+    entry = table->Table[pos];
+    while (entry) {
+        if (entry->Key == key)
+            return true;
+        entry = entry->Next;
+    }
+    return false;
+}
+
 void *
 hash_take (HashTable *table, GLuint key)
 {

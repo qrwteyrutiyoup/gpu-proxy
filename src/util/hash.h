@@ -60,6 +60,10 @@ private void *
 hash_lookup (HashTable *table,
              GLuint key);
 
+private bool
+hash_contains (HashTable *table,
+               GLuint key);
+
 private void
 hash_insert (HashTable *table,
              GLuint key,

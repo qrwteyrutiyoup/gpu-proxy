@@ -2623,6 +2623,10 @@ caching_client_glGetUniformfv (void* client, GLuint program,
     if (! state)
         return;
 
+    if (CLIENT(client)->needs_timestamp) {
+        client_send_log ();
+    }
+
     command_t *command = client_get_space_for_command (COMMAND_GLGETUNIFORMFV);
     command_glgetuniformfv_init (command, program, location, params);
     client_run_command (command);
@@ -5083,8 +5087,8 @@ caching_client_glFlush (void *client)
 
     client_run_command_async (command);
     /* XXX: Do we need the next command to be logged ? */
-    CLIENT(client)->needs_timestamp = false;
-    //clients_list_set_needs_timestamp ();
+    //CLIENT(client)->needs_timestamp = false;
+    clients_list_set_needs_timestamp ();
 }
 
 static void
@@ -5148,8 +5152,8 @@ caching_client_eglSwapBuffers (void* client,
 
     client_run_command_async (command);
     /* XXX: Do we need next command to be logged ? */
-    CLIENT(client)->needs_timestamp = false;
-    //clients_list_set_needs_timestamp ();
+    //CLIENT(client)->needs_timestamp = false;
+    clients_list_set_needs_timestamp ();
     return EGL_TRUE;
 
 //    EGLBoolean result = CACHING_CLIENT(client)->super_dispatch.eglSwapBuffers (client, display, surface);

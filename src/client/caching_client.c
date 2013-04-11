@@ -1531,7 +1531,6 @@ caching_client_glDeleteFramebuffers (void* client, GLsizei n, const GLuint *fram
         return;
     }
 
-    name_handler_delete_names (state->framebuffer_name_handler, n, framebuffers);
 
     CACHING_CLIENT(client)->super_dispatch.glDeleteFramebuffers (client, n, framebuffers);
 
@@ -1542,6 +1541,7 @@ caching_client_glDeleteFramebuffers (void* client, GLsizei n, const GLuint *fram
 
         framebuffer = egl_state_lookup_cached_framebuffer (state, framebuffers[i]);
         if (framebuffer) {
+            name_handler_delete_names (state->framebuffer_name_handler, 1, &framebuffers[i]);
             if (framebuffer->attached_buffer[0].attached_object_id)
                 _framebuffer_detach_object (state,
                                             framebuffer->attached_buffer[0].attached_object_type,
@@ -1584,7 +1584,6 @@ caching_client_glDeleteRenderbuffers (void* client, GLsizei n, const GLuint *ren
     }
 
     mutex_lock (cached_shared_states_mutex);
-    name_handler_delete_names (egl_state_get_renderbuffer_name_handler (state), n, renderbuffers);
 
     int i;
     for (i = 0; i < n; i++) {
@@ -1593,6 +1592,7 @@ caching_client_glDeleteRenderbuffers (void* client, GLsizei n, const GLuint *ren
 
         renderbuffer = egl_state_lookup_cached_renderbuffer (state, renderbuffers[i]);
         if (renderbuffer) {
+            name_handler_delete_names (egl_state_get_renderbuffer_name_handler (state), 1, &renderbuffers[i]);
             framebuffer = egl_state_lookup_cached_framebuffer (state, renderbuffer->framebuffer_id);
             if (framebuffer && renderbuffer->framebuffer_id) {
                 framebuffer->complete = FRAMEBUFFER_COMPLETE_UNKNOWN;
@@ -1648,12 +1648,12 @@ caching_client_glDeleteTextures (void* client, GLsizei n, const GLuint *textures
     CACHING_CLIENT(client)->super_dispatch.glDeleteTextures (client, n, textures);
 
     mutex_lock (cached_shared_states_mutex);
-    name_handler_delete_names (egl_state_get_texture_name_handler (state), n, textures);
     for (i = 0; i < n; i++) {
         if (textures[i] == 0)
             continue;
         tex = egl_state_lookup_cached_texture (state, textures[i]);
         if (tex) {
+            name_handler_delete_names (egl_state_get_texture_name_handler (state), 1, &textures[i]);
             framebuffer = egl_state_lookup_cached_framebuffer (state, tex->framebuffer_id);
             if (framebuffer && tex->framebuffer_id) {
                 framebuffer->complete = FRAMEBUFFER_COMPLETE_UNKNOWN;

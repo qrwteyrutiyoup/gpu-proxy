@@ -3,36 +3,27 @@
 
 #include <stdlib.h>
 
-static link_list_t *
-_call_order_list ()
-{
-    static link_list_t call_list = {NULL, NULL};
-    return &call_list;
-}
+static link_list_t call_list = {NULL, NULL};
 
 static void
 _call_order_list_append (thread_t server)
 {
-    link_list_t *list = _call_order_list ();
-
     server_log_t *log = (server_log_t *) malloc (sizeof (server_log_t));
     log->server = server;
-    link_list_append (list, log, free);
+    link_list_append (&call_list, log, free);
 }
 
 static void
 _call_order_list_remove ()
 {
-    link_list_t *list = _call_order_list ();
-
-    if (list->head)
-        link_list_delete_element (list, list->head);
+    if (call_list.head)
+        link_list_delete_element (&call_list, call_list.head);
 }
 
 static bool
 _call_order_list_head_is_server (thread_t server)
 {
-    list_node_t *head = _call_order_list ()->head;
+    list_node_t *head = call_list.head;
 
     if (head) {
         server_log_t *log = (server_log_t *)(head->data);

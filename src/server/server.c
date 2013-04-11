@@ -5,6 +5,7 @@
 #include "dispatch_table.h"
 #include "thread_private.h"
 #include "server_state.h"
+#include "sync_queue.h"
 #include <time.h>
 #include <X11/Xlib.h>
 

@@ -37,10 +37,6 @@ typedef struct _server_display_list {
                                               */
 } server_display_list_t;
 
-typedef struct _server_log {
-    thread_t            server;
-} server_log_t;
-
 /*********************************************************
  * functions for server_display_list
  *********************************************************/
@@ -79,51 +75,5 @@ _server_display_mark_for_deletion (EGLDisplay egl_display);
 /* get the pointer to the display */
 private server_display_list_t *
 _server_display_find (EGLDisplay egl_display);
-
-/********************************************************
- * functions for call orders.  We need to make sure the
- * critical egl/gl calls are kept in order.  These calls
- * include 
- * eglMakeCurrent
- * eglGetDisplay
- * eglInitialize,
- * eglCreateWindowSurface
- * eglCreatePbufferSurface, 
- * eglCreatePixmapSurface
- * eglBindAPI
- * eglCreatePixmapSurfaceHI
- * eglCreateContext
- * eglCreatePbufferFromClientBuffer
- * eglCreateImageKHR
- * eglCreateDRMImageMESA
- * eglLockSurfaceKHR
- * eglCreateSyncKHR
- * eglTerminate
- * eglWaitNative
- * eglWaitGL
- * eglWaitClient
- * eglSwapBuffers
- * eglReleaseThread
- * glFinish
- * glFlush
- * any other egl/gl calls immediately after these calls
- ********************************************************/
-private void
-_call_order_list_append (thread_t server);
-
-private void
-_call_order_list_remove ();
-
-private bool
-_call_order_list_head_is_server (thread_t server);
-
-private void
-_server_append_call_log (thread_t server);
-
-private bool
-_server_allow_call (thread_t server);
-
-private void
-_server_remove_call_log ();
 
 #endif

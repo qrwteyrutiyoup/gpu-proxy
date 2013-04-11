@@ -5,6 +5,7 @@ typedef struct _client client_t;
 
 #include "dispatch_table.h"
 #include "egl_state.h"
+#include "pilot_client.h"
 #include "ring_buffer.h"
 #include "server.h"
 #include "types_private.h"
@@ -99,22 +100,6 @@ client_has_valid_state (client_t *client);
 
 private egl_state_t *
 client_get_current_state (client_t *client);
-
-private command_t *
-client_get_space_for_log_size (client_t *client,
-                               size_t size);
-
-private command_t *
-client_get_space_for_log_command (command_type_t command_type);
-
-private void
-client_run_log_command_async (command_t *command);
-
-private void
-client_run_log_command (command_t *command);
-
-private void
-client_send_log (void);
 
 private void
 clients_list_add_client (client_t *client);

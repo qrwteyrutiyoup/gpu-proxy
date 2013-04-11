@@ -24,6 +24,8 @@ libGPUProcess_la_SOURCES = \
 	client/client.h \
 	client/name_handler.h \
 	client/name_handler.c \
+	client/pilot_client.h \
+	client/pilot_client.c \
 	command.c \
 	command.h \
 	command_custom.c \

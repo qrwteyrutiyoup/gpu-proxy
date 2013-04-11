@@ -19,7 +19,8 @@ pilot_server_handle_log (server_t *server, command_t *abstract_command)
 
     command_log_t *command = (command_log_t *)abstract_command;
 
-    sync_queue_append_call_log (abstract_command->server_id);
+    sync_queue_append_call_log (abstract_command->server_id,
+                                abstract_command->timestamp);
     command->result = true;
 }
 

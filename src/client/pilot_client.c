@@ -165,11 +165,13 @@ client_run_log_command (command_t *command)
 }
 
 void
-client_send_log (void)
+client_send_log (double timestamp)
 {
     mutex_lock (pilot_command_mutex);
     command_t *command = client_get_space_for_log_command (COMMAND_LOG);
+    command->timestamp = timestamp;
 
-    client_run_log_command (command);
+    //client_run_log_command (command);
+    client_run_log_command_async (command);
     mutex_unlock (pilot_command_mutex);
 }

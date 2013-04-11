@@ -21,6 +21,6 @@ private void
 client_run_log_command (command_t *command);
 
 private void
-client_send_log (void);
+client_send_log (double timestamp);
 
 #endif /* PILOT_CLIENT_H */

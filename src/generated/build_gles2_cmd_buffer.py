@@ -2911,9 +2911,12 @@ class GLGenerator(object):
 
         file.Write("    INSTRUMENT();\n");
         file.Write("    if (CLIENT(object)->needs_timestamp) {\n");
-        file.Write("        client_send_log ();\n");
+        file.Write("        double timestamp = client_get_timestamp ();\n");
+        file.Write("        client_send_log (timestamp);\n");
+        file.Write("        CLIENT(object)->timestamp = timestamp;\n");
         file.Write("    }\n\n");
         file.Write("    command_t *command = client_get_space_for_command (COMMAND_%s);\n" % func.name.upper())
+        file.Write("    command->timestamp = CLIENT(object)->timestamp;\n");
         header = "    command_%s_init (" % func.name.lower()
         indent = " " * len(header)
         file.Write(header + "command")

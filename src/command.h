@@ -30,6 +30,7 @@ typedef struct command {
     unsigned int token;
 
     bool use_timestamp;
+    double timestamp;
     thread_t server_id;
 } command_t;
 

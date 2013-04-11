@@ -39,6 +39,7 @@ struct _client {
     thread_t server_thread;
     bool initializing;
     bool needs_timestamp;
+    double timestamp;
 
     sem_t server_signal;
     sem_t client_signal;
@@ -109,5 +110,8 @@ clients_list_remove_client (client_t *client);
 
 private void
 clients_list_set_needs_timestamp ();
+
+private double
+client_get_timestamp ();
 
 #endif /* CLIENT_H */

@@ -390,4 +390,13 @@ void clients_list_set_needs_timestamp ()
     mutex_unlock (clients_list_mutex);
 }
 
+double
+client_get_timestamp ()
+{
+    struct timespec now;
+
+    clock_gettime (CLOCK_MONOTONIC, &now);
+    return now.tv_sec * 1000000.0 + now.tv_nsec / 1000.0;
+}
+
 #include "client_autogen.c"

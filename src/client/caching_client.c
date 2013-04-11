@@ -784,13 +784,18 @@ caching_client_glCreateProgram (void* client)
         return 0;
     
     if (CLIENT(client)->needs_timestamp) {
-        client_send_log ();
+        double timestamp = client_get_timestamp ();
+        client_send_log (timestamp);
+        CLIENT(client)->timestamp = timestamp;
     }
 
     name_handler_alloc_names (state->shader_objects_name_handler, 1, &result);
     command = client_get_space_for_command (COMMAND_GLCREATEPROGRAM);
     command_glcreateprogram_init (command);
     ((command_glcreateprogram_t *)command)->result = result;
+
+    if (CLIENT(client)->needs_timestamp)
+        command->timestamp = CLIENT(client)->timestamp;
 
     client_run_command_async (command);
     CLIENT(client)->needs_timestamp = false;
@@ -866,7 +871,9 @@ caching_client_glCreateShader (void* client, GLenum shaderType)
     }
     
     if (CLIENT(client)->needs_timestamp) {
-        client_send_log ();
+        double timestamp = client_get_timestamp ();
+        client_send_log (timestamp);
+        CLIENT(client)->timestamp = timestamp;
     }
 
     GLuint result = 0;
@@ -875,6 +882,9 @@ caching_client_glCreateShader (void* client, GLenum shaderType)
     name_handler_alloc_names (state->shader_objects_name_handler, 1, &result);
     command_glcreateshader_init (command, shaderType);
     ((command_glcreateshader_t *)command)->result = result;
+
+    if (CLIENT(client)->needs_timestamp)
+        command->timestamp = CLIENT(client)->timestamp;
 
     client_run_command_async (command);
     CLIENT(client)->needs_timestamp = false;
@@ -1651,7 +1661,9 @@ caching_client_setup_vertex_attrib_pointer_if_necessary (client_t *client,
         }
     
         if (CLIENT(client)->needs_timestamp) {
-            client_send_log ();
+            double timestamp = client_get_timestamp ();
+            client_send_log (timestamp);
+            CLIENT(client)->timestamp = timestamp;
         }
     
         if (fits_in_one_array) {
@@ -1673,6 +1685,9 @@ caching_client_setup_vertex_attrib_pointer_if_necessary (client_t *client,
             link_list_prepend (allocated_data_arrays, attribs[i].data, free);
             attrib_command = client_get_space_for_command (COMMAND_GLVERTEXATTRIBPOINTER);
         }
+    
+        if (CLIENT(client)->needs_timestamp)
+            attrib_command->timestamp = CLIENT(client)->timestamp;
 
         if (fits_in_one_array)
             command_glvertexattribpointer_init (attrib_command,
@@ -1760,7 +1775,9 @@ caching_client_glDrawArrays (void* client,
     }
     
     if (CLIENT(client)->needs_timestamp) {
-        client_send_log ();
+        double timestamp = client_get_timestamp ();
+        client_send_log (timestamp);
+        CLIENT(client)->timestamp = timestamp;
     }
 
     if (!command)
@@ -1770,10 +1787,14 @@ caching_client_glDrawArrays (void* client,
         command->size = command_get_size (COMMAND_GLDRAWARRAYS) + array_size;
         command->token = 0;
         if (CLIENT(client)->needs_timestamp) {
+            command->use_timestamp = true;
         }
         else
             command->use_timestamp = false;
     }
+
+    if (CLIENT(client)->needs_timestamp)
+        command->timestamp = CLIENT(client)->timestamp;
 
     command_gldrawarrays_init (command, mode, first, count);
     ((command_gldrawarrays_t *) command)->arrays_to_free = arrays_to_free;
@@ -2010,6 +2031,9 @@ caching_client_glDrawElements (void* client,
 
     command_gldrawelements_init (&command->header, mode, count, type, indices_to_pass);
     ((command_gldrawelements_t *) command)->arrays_to_free = arrays_to_free;
+    if (CLIENT(client)->needs_timestamp)
+        command->header.timestamp = CLIENT(client)->timestamp;
+
     client_run_command_async (&command->header);
     CLIENT(client)->needs_timestamp = false;
 
@@ -2624,10 +2648,15 @@ caching_client_glGetUniformfv (void* client, GLuint program,
         return;
 
     if (CLIENT(client)->needs_timestamp) {
-        client_send_log ();
+        double timestamp = client_get_timestamp ();
+        client_send_log (timestamp);
+        CLIENT(client)->timestamp = timestamp;
     }
 
     command_t *command = client_get_space_for_command (COMMAND_GLGETUNIFORMFV);
+    if (CLIENT(client)->needs_timestamp)
+        command->timestamp = CLIENT(client)->timestamp;
+
     command_glgetuniformfv_init (command, program, location, params);
     client_run_command (command);
 
@@ -5073,6 +5102,7 @@ caching_client_eglGetCurrentSurface (void* client,
 static void
 caching_client_glFlush (void *client)
 {
+    double timestamp = client_get_timestamp ();
     INSTRUMENT();
 
     if (!CLIENT(client)->active_state)
@@ -5080,10 +5110,13 @@ caching_client_glFlush (void *client)
     
     /* send log */
     CLIENT(client)->needs_timestamp = true;
-    client_send_log ();
+    client_send_log (timestamp);
+    CLIENT(client)->timestamp = timestamp;
 
     command_t *command = client_get_space_for_command (COMMAND_GLFLUSH);
     command_glflush_init (command);
+
+    command->timestamp = CLIENT(client)->timestamp;
 
     client_run_command_async (command);
     /* XXX: Do we need the next command to be logged ? */
@@ -5133,6 +5166,7 @@ caching_client_eglSwapBuffers (void* client,
                                EGLDisplay display,
                                EGLSurface surface)
 {
+    double timestamp = client_get_timestamp ();
     INSTRUMENT();
 
     if (!CLIENT(client)->active_state)
@@ -5145,10 +5179,13 @@ caching_client_eglSwapBuffers (void* client,
     
     /* send log */
     CLIENT(client)->needs_timestamp = true;
-    client_send_log ();
+    client_send_log (timestamp);
+    CLIENT(client)->timestamp = timestamp;
 
     command_t *command = client_get_space_for_command (COMMAND_EGLSWAPBUFFERS);
     command_eglswapbuffers_init (command, display, surface);
+
+    command->timestamp = CLIENT(client)->timestamp;
 
     client_run_command_async (command);
     /* XXX: Do we need next command to be logged ? */
@@ -5698,12 +5735,19 @@ caching_client_eglMakeCurrent (void* client,
     if (! display_and_context_match)
         CLIENT(client)->needs_timestamp = true;
 
-    if (CLIENT(client)->needs_timestamp == true)
-        client_send_log ();
+    if (CLIENT(client)->needs_timestamp == true) {
+        double timestamp = client_get_timestamp ();
+        client_send_log (timestamp);
+        CLIENT(client)->timestamp = timestamp;
+    }
 
-        command_t *command = client_get_space_for_command (COMMAND_EGLMAKECURRENT);
-        command_eglmakecurrent_init (command, display, draw, read, ctx);
-        client_run_command_async (command);
+    command_t *command = client_get_space_for_command (COMMAND_EGLMAKECURRENT);
+    command_eglmakecurrent_init (command, display, draw, read, ctx);
+
+    if (CLIENT(client)->needs_timestamp)
+        command->timestamp = CLIENT(client)->timestamp;
+
+    client_run_command_async (command);
         /* XXX: Do we need next command to be logged ? */
         CLIENT(client)->needs_timestamp = false;
         /*if (! display_and_context_match)

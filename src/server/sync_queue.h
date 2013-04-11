@@ -38,10 +38,11 @@
 
 typedef struct _server_log {
     thread_t            server;
+    double              timestamp;
 } server_log_t;
 
 private void
-sync_queue_append_call_log (thread_t server);
+sync_queue_append_call_log (thread_t server, double timestamp);
 
 private void
 sync_queue_allow_call (command_t *command,

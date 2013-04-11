@@ -176,6 +176,7 @@ egl_state_init (egl_state_t *state,
     state->texture_cache = new_hash_table(free);
     state->framebuffer_cache = new_hash_table (free);
     state->renderbuffer_cache = new_hash_table (free);
+    state->array_buffer_cache = new_hash_table (NULL);
     state->element_array_buffer_cache = new_hash_table (_free_array_buffer);
     state->element_array_buffer_binding_object = NULL;
 

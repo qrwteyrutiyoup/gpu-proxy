@@ -313,6 +313,7 @@ struct egl_state {
     HashTable    *texture_cache;
     HashTable    *framebuffer_cache;
     HashTable    *renderbuffer_cache;
+    HashTable    *array_buffer_cache;
     HashTable    *element_array_buffer_cache;
 
     name_handler_t *texture_name_handler;  /* shared across shared contexts */

@@ -274,6 +274,13 @@ caching_client_glBindBuffer (void* client, GLenum target, GLuint buffer)
         if (state->array_buffer_binding == buffer)
             return;
 
+         if (buffer) {
+             if (! hash_contains (state->array_buffer_cache, buffer)) {
+                 name_handler_alloc_name (egl_state_get_array_buffer_name_handler (state), buffer);
+                 hash_insert (state->array_buffer_cache, buffer, NULL);
+             }
+         }
+
          CACHING_CLIENT(client)->super_dispatch.glBindBuffer (client, target, buffer);
 
         /* FIXME: we don't know whether it succeeds or not */
@@ -313,6 +320,11 @@ caching_client_glBindBuffer (void* client, GLenum target, GLuint buffer)
                 buf_obj = egl_state_lookup_cached_element_array_buffer (state, buffer);
                 if (!buf_obj)
                     buf_obj = egl_state_create_cached_element_array_buffer (state, buffer);
+
+                if (! hash_contains (state->array_buffer_cache, buffer)) {
+                    name_handler_alloc_name (egl_state_get_array_buffer_name_handler (state), buffer);
+                    hash_insert(state->array_buffer_cache, buffer, NULL);
+                }
             }
             CACHING_CLIENT(client)->super_dispatch.glBindBuffer (client, target, buffer);
             //state->need_get_error = true;
@@ -1455,8 +1467,6 @@ caching_client_glDeleteBuffers (void* client, GLsizei n, const GLuint *buffers)
     CACHING_CLIENT(client)->super_dispatch.glDeleteBuffers (client, n, buffers);
 
     mutex_lock (cached_shared_states_mutex);
-    name_handler_delete_names (egl_state_get_array_buffer_name_handler (state), n, buffers);
-    mutex_unlock (cached_shared_states_mutex);
     /* check array_buffer_binding and element_array_buffer_binding */
     for (i = 0; i < n; i++) {
         if (buffers[i] == state->array_buffer_binding) {
@@ -1470,7 +1480,12 @@ caching_client_glDeleteBuffers (void* client, GLsizei n, const GLuint *buffers)
         else {
             egl_state_delete_cached_element_array_buffer (state, buffers[i]);
         }
+        if (hash_contains (state->array_buffer_cache, buffers[i])) {
+            name_handler_delete_names (egl_state_get_array_buffer_name_handler (state), 1, &buffers[i]);
+            hash_remove(state->array_buffer_cache, buffers[i]);
+        }
     }
+    mutex_unlock (cached_shared_states_mutex);
 
     /* update client state */
     if (count == 0)
@@ -2616,6 +2631,9 @@ caching_client_glGenBuffers (void* client, GLsizei n, GLuint *buffers)
 
     mutex_lock (cached_shared_states_mutex);
     name_handler_alloc_names (egl_state_get_array_buffer_name_handler (state), n, buffers);
+    int i;
+    for (i = 0; i < n; i++)
+        hash_insert(state->array_buffer_cache, buffers[i], NULL);
     mutex_unlock (cached_shared_states_mutex);
 
     GLuint *server_buffers = (GLuint *)malloc (n * sizeof (GLuint));

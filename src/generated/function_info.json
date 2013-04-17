@@ -1,0 +1,483 @@
+ { 
+  "glDrawArrays" : {
+    "type": "Synchronous"
+  },
+  "glDrawElements" : {
+    "type": "Synchronous"
+  },
+  "glMultiDrawArraysEXT" : {
+    "type": "Synchronous"
+  },
+  "glMultiDrawElementsEXT" : {
+    "type": "Synchronous"
+  },
+  "glTexImage3DOES" : {
+    "type": "Synchronous"
+  },
+  "glTexSubImage3DOES" : {
+    "type": "Synchronous"
+  },
+  "eglGetProcAddress": {
+    "type": "Manual"
+  },
+  "glFlush" : {
+    "type": "Synchronous"
+  },
+  "glFinish" : {
+    "type": "Synchronous"
+  },
+  "glVertexAttribPointer": {
+    "type": "Passthrough"
+  },
+  "eglGetError": {
+    "default_return": "EGL_NOT_INITIALIZED"
+  },
+  "eglWaitGL": {
+    "default_return": "EGL_TRUE"
+  },
+  "eglClientWaitSyncKHR": {
+    "default_return": "EGL_FALSE"
+  },
+  "eglClientWaitSyncNV": {
+    "default_return": "EGL_TIMEOUT_EXPIRED_NV"
+  },
+  "glGetUniformLocation": {
+    "default_return": "-1",
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glGetAttribLocation": {
+    "default_return": "-1",
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glGetError": {
+    "default_return": "GL_INVALID_OPERATION"
+  },
+  "glBufferData": {
+    "argument_has_size": { "data": "size" }
+  },
+  "glBufferSubData": {
+    "argument_has_size": { "data": "size" }
+  },
+  "glCompressedTexImage2D": {
+    "argument_has_size": { "data": "imageSize" }
+  },
+  "glCompressedTexSubImage2D": {
+    "argument_has_size": { "data": "imageSize" }
+  },
+  "glCompressedTexImage3DOES": {
+    "argument_has_size": { "data": "imageSize" }
+  },
+  "glCompressedTexSubImage3DOES": {
+    "argument_has_size": { "data": "imageSize" }
+  },
+  "glCompressedTexSubImage2D": {
+    "argument_has_size": { "data": "imageSize" }
+  },
+  "glDeleteBuffers": {
+    "argument_has_size": { "buffers": "n" }
+  },
+  "glDeleteBuffers": {
+    "argument_has_size": { "buffers": "n" }
+  },
+  "glDeleteFramebuffers": {
+    "argument_has_size": { "framebuffers": "n" }
+  },
+  "glDeleteRenderbuffers": {
+    "argument_has_size": { "renderbuffers": "n" }
+  },
+  "glDeleteTextures": {
+    "argument_has_size": { "textures": "n" }
+  },
+  "glDeleteVertexArraysOES": {
+    "argument_has_size": { "arrays": "n" }
+  },
+  "glDeleteVertexArraysOES": {
+    "argument_has_size": { "arrays": "n" }
+  },
+  "glDiscardFramebufferEXT": {
+    "argument_has_size": { "attachments": "numAttachments" }
+  },
+  "glDeleteFencesNV": {
+    "argument_has_size": { "fences": "count" }
+  },
+  "glDeleteQueriesEXT": {
+    "argument_has_size": { "queries": "n" }
+  },
+  "glUniform1fv": {
+    "argument_has_size": { "v": "count" },
+    "argument_element_size": { "v": 1 }
+  },
+  "glUniform2fv": {
+    "argument_has_size": { "v": "count" },
+    "argument_element_size": { "v": 2 }
+  },
+  "glUniform3fv": {
+    "argument_has_size": { "v": "count" },
+    "argument_element_size": { "v": 3 }
+  },
+  "glUniform4fv": {
+    "argument_has_size": { "v": "count" },
+    "argument_element_size": { "v": 4 }
+  },
+  "glUniform1iv": {
+    "argument_has_size": { "v": "count" },
+    "argument_element_size": { "v": 1 }
+  },
+  "glUniform2iv": {
+    "argument_has_size": { "v": "count" },
+    "argument_element_size": { "v": 2 }
+  },
+  "glUniform3iv": {
+    "argument_has_size": { "v": "count" },
+    "argument_element_size": { "v": 3 }
+  },
+  "glUniform4iv": {
+    "argument_has_size": { "v": "count" },
+    "argument_element_size": { "v": 4 }
+  },
+  "glUniformMatrix2fv": {
+    "argument_has_size": { "value": "count" },
+    "argument_element_size": { "value": 4 }
+  },
+  "glUniformMatrix3fv": {
+    "argument_has_size": { "value": "count" },
+    "argument_element_size": { "value": 9 }
+  },
+  "glUniformMatrix4fv": {
+    "argument_has_size": { "value": "count" },
+    "argument_element_size": { "value": 16 }
+  },
+  "glVertexAttrib1fv": {
+    "argument_element_size": { "values": 1 }
+  },
+  "glVertexAttrib2fv": {
+    "argument_element_size": { "values": 2 }
+  },
+  "glVertexAttrib3fv": {
+    "argument_element_size": { "values": 3 }
+  },
+  "glVertexAttrib4fv": {
+    "argument_element_size": { "values": 4 }
+  },
+  "glProgramBinaryOES": {
+    "argument_has_size": { "binary": "length" }
+  },
+  "glDeletePerfMonitorsAMD": {
+    "argument_has_size": { "monitors": "n" }
+  },
+  "glSelectPerfMonitorCountersAMD": {
+    "argument_has_size": { "countersList": "numCounters" }
+  },
+  "eglInitialize": {
+    "out_arguments": ["major", "minor"]
+  },
+  "eglGetConfigs": {
+    "out_arguments": ["configs", "num_config"]
+  },
+  "eglGetConfigAttrib": {
+    "out_arguments": ["value"]
+  },
+  "eglQuerySurface": {
+    "out_arguments": ["value"]
+  },
+  "eglQueryContext": {
+    "out_arguments": ["value"]
+  },
+  "eglGetSyncAttribKHR": {
+    "out_arguments": ["value"]
+  },
+  "eglGetSyncAttribNV": {
+    "out_arguments": ["value"]
+  },
+  "eglGetImageAttribSEC": {
+    "out_arguments": ["value"]
+  },
+  "eglQuerySurfacePointerANGLE": {
+    "out_arguments": ["value"]
+  },
+  "glGetBooleanv": {
+    "out_arguments": ["params"]
+  },
+  "glGetFloatv": {
+    "out_arguments": ["params"]
+  },
+  "glGetIntegerv": {
+    "out_arguments": ["params"]
+  },
+  "glGenBuffers": {
+    "type": "Asynchronous",
+    "out_arguments": ["buffers"]
+  },
+  "glGenFramebuffers": {
+    "type": "Asynchronous",
+    "out_arguments": ["framebuffers"]
+  },
+  "glGenRenderbuffers": {
+    "type": "Asynchronous",
+    "out_arguments": ["renderbuffers"]
+  },
+  "glGenTextures": {
+    "type": "Asynchronous",
+    "out_arguments": ["textures"]
+  },
+  "glCreateProgram": {
+    "type": "Asynchronous"
+  },
+  "glCreateShader": {
+    "type": "Asynchronous"
+  },
+  "glGetActiveAttrib": {
+    "out_arguments": ["length", "size", "type", "name"],
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glGetActiveUniform": {
+    "out_arguments": ["length", "size", "type", "name"],
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glGetAttachedShaders": {
+    "out_arguments": ["count", "shaders"],
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glGetBufferParameteriv": {
+    "out_arguments": {"attrib_list": ["params"]}
+  },
+  "glGetFramebufferAttachmentParameteriv": {
+    "out_arguments": {"attrib_list": ["params"]}
+  },
+  "glGetProgramInfoLog": {
+    "out_arguments": ["length", "infolog"],
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glGetProgramiv": {
+    "out_arguments": ["params"],
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glGetRenderbufferParameteriv": {
+    "out_arguments": ["params"]
+  },
+  "glGetShaderInfoLog": {
+    "out_arguments": ["length", "infolog"],
+    "mapped_names": {"type": "shader_object", "attrib_list": ["shader"]}
+  },
+  "glGetShaderPrecisionFormat": {
+    "out_arguments": ["range", "precision"]
+  },
+  "glGetShaderSource": {
+    "out_arguments": ["length", "source"],
+    "mapped_names": {"type": "shader_object", "attrib_list": ["shader"]}
+  },
+  "glGetShaderiv": {
+    "out_arguments": ["params"],
+    "mapped_names": {"type": "shader_object", "attrib_list": ["shader"]}
+  },
+  "glGetTexParameteriv": {
+    "out_arguments": ["params"]
+  },
+  "glGetTexParameterfv": {
+    "out_arguments": ["params"]
+  },
+  "glGetUniformiv": {
+    "out_arguments": ["params"],
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glGetUniformfv": {
+    "out_arguments": ["params"],
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glGetVertexAttribiv": {
+    "out_arguments": ["params"]
+  },
+  "glGetVertexAttribfv": {
+    "out_arguments": ["params"]
+  },
+  "glReadPixels": {
+    "out_arguments": ["pixels"]
+  },
+  "glGetVertexAttribPointerv": {
+    "out_arguments": ["pointer"]
+  },
+  "glGetProgramBinaryOES": {
+    "out_arguments": ["length", "binaryFormat", "binary"]
+  },
+  "glGetBufferPointervOES": {
+    "out_arguments": ["params"]
+  },
+  "glGenVertexArraysOES": {
+    "out_arguments": ["arrays"]
+  },
+  "glGenPerfMonitorsAMD": {
+    "out_arguments": ["monitors"]
+  },
+  "glGetPerfMonitorGroupsAMD": {
+    "out_arguments": ["numGroups", "groups"]
+  },
+  "glGetPerfMonitorCountersAMD": {
+    "out_arguments": ["numCounters", "maxActiveCounters", "counters"]
+  },
+  "glGetPerfMonitorCounterDataAMD": {
+    "out_arguments": ["data", "bytesWritten"]
+  },
+  "glGetPerfMonitorGroupStringAMD": {
+    "out_arguments": ["length", "groupString"]
+  },
+  "glGetPerfMonitorCounterStringAMD": {
+    "out_arguments": ["length", "counterString"]
+  },
+  "glGetPerfMonitorCounterInfoAMD": {
+    "out_arguments": ["data"]
+  },
+  "glGenFencesNV": {
+    "out_arguments": ["fences"]
+  },
+  "glGetFenceivNV": {
+    "out_arguments": ["params"]
+  },
+  "glGetDriverControlsQCOM": {
+    "out_arguments": ["num", "driverControls"]
+  },
+  "glGetDriverControlStringQCOM": {
+    "out_arguments": ["length", "driverControlString"]
+  },
+  "glExtGetTexturesQCOM": {
+    "out_arguments": ["textures", "numTextures"]
+  },
+  "glExtGetBuffersQCOM": {
+    "out_arguments": ["buffers", "numBuffers"]
+  },
+  "glExtGetRenderbuffersQCOM": {
+    "out_arguments": ["renderbuffers", "numRenderbuffers"]
+  },
+  "glExtGetFramebuffersQCOM": {
+    "out_arguments": ["framebuffers", "numFramebuffers"]
+  },
+  "glExtGetTexLevelParameterivQCOM": {
+    "out_arguments": ["params"]
+  },
+  "glExtGetTexSubImageQCOM": {
+    "out_arguments": ["texels"]
+  },
+  "glExtGetBufferPointervQCOM": {
+    "out_arguments": ["params"]
+  },
+  "glExtGetShadersQCOM": {
+    "out_arguments": ["shaders", "numShaders"]
+  },
+  "glExtGetProgramsQCOM": {
+    "out_arguments": ["programs", "numPrograms"]
+  },
+  "glExtGetProgramBinarySourceQCOM": {
+    "out_arguments": ["source", "length"]
+  },
+  "glGenQueriesEXT": {
+    "out_arguments": ["queries"]
+  },
+  "glGetQueryivEXT": {
+    "out_arguments": ["params"]
+  },
+  "glGetQueryObjectuivEXT": {
+    "out_arguments": ["params"]
+  },
+  "eglChooseConfig": {
+    "out_arguments": ["configs", "num_config"],
+    "argument_size_from_function": {"attrib_list": "_get_egl_attrib_list_size"}
+  },
+  "eglCreateWindowSurface": {
+    "argument_size_from_function": {"attrib_list": "_get_egl_attrib_list_size"}
+  },
+  "eglCreatePbufferSurface": {
+    "argument_size_from_function": {"attrib_list": "_get_egl_attrib_list_size"}
+  },
+  "eglCreatePixmapSurface": {
+    "argument_size_from_function": {"attrib_list": "_get_egl_attrib_list_size"}
+  },
+  "eglCreatePbufferFromClientBuffer": {
+    "argument_size_from_function": {"attrib_list": "_get_egl_attrib_list_size"}
+  },
+  "eglCreateContext": {
+    "argument_size_from_function": {"attrib_list": "_get_egl_attrib_list_size"}
+  },
+  "eglLockSurfaceKHR": {
+    "argument_size_from_function": {"attrib_list": "_get_egl_attrib_list_size"}
+  },
+  "eglCreateImageKHR": {
+    "argument_size_from_function": {"attrib_list": "_get_egl_attrib_list_size"}
+  },
+  "eglCreateSyncKHR": {
+    "argument_size_from_function": {"attrib_list": "_get_egl_attrib_list_size"}
+  },
+  "eglCreateFenceSyncNV": {
+    "argument_size_from_function": {"attrib_list": "_get_egl_attrib_list_size"}
+  },
+  "eglCreateDRMImageMESA": {
+    "argument_size_from_function": {"attrib_list": "_get_egl_attrib_list_size"}
+  },
+  "glBindBuffer" : {
+    "mapped_names": {"type": "buffer","attrib_list": ["buffer"], "create_attrib_if_needed": ["buffer"]}
+  },
+  "glIsBuffer" : {
+    "mapped_names": {"type": "buffer", "attrib_list": ["buffer"]}
+  },
+  "glBindFramebuffer" : {
+    "mapped_names": {"type": "framebuffer", "attrib_list": ["framebuffer"]}
+  },
+  "glIsFramebuffer" : {
+    "mapped_names": {"type": "framebuffer", "attrib_list": ["framebuffer"]}
+  },
+  "glBindTexture" : {
+    "mapped_names": {"type": "texture", "attrib_list": ["texture"], "create_attrib_if_needed": ["texture"]}
+  },
+  "glIsTexture" : {
+    "mapped_names": {"type": "texture", "attrib_list": ["texture"]}
+  },
+  "glFramebufferTexture2D" : {
+    "mapped_names": {"type": "texture", "attrib_list": ["texture"], "create_attrib_if_needed": ["texture"]}
+  },
+  "glBindRenderbuffer" : {
+    "mapped_names": {"type": "renderbuffer", "attrib_list": ["renderbuffer"], "create_attrib_if_needed": ["renderbuffer"]}
+  },
+  "glIsRenderbuffer" : {
+    "mapped_names": {"type": "renderbuffer", "attrib_list": ["renderbuffer"]}
+  },
+  "glFramebufferRenderbuffer" : {
+    "mapped_names": {"type": "renderbuffer", "attrib_list": ["renderbuffer"]}
+  },
+  "glFramebufferTexture2DMultisampleEXT": {
+    "mapped_names": {"type": "texture", "attrib_list": ["texture"]}
+  },
+  "glFramebufferTexture2DMultisampleIMG": {
+    "mapped_names": {"type": "texture", "attrib_list": ["texture"]}
+  },
+  "glAttachShader" : {
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program", "shader"]}
+  },
+  "glBindAttribLocation" : {
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glDetachShader" : {
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program", "shader"]}
+  },
+  "glIsProgram" : {
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glLinkProgram" : {
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glUseProgram" : {
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glValidateProgram" : {
+    "mapped_names": {"type": "shader_object", "attrib_list": ["program"]}
+  },
+  "glCompileShader" : {
+    "mapped_names": {"type": "shader_object", "attrib_list": ["shader"]}
+  },
+  "glDeleteShader" : {
+    "mapped_names": {"type": "shader_object", "attrib_list": ["shader"]}
+  },
+  "glIsShader" : {
+    "mapped_names": {"type": "shader_object", "attrib_list": ["shader"]}
+  },
+  "glShaderSource" : {
+    "mapped_names": {"type": "shader_object", "attrib_list": ["shader"]}
+  }
+}
